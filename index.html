@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-bju1bSYpJ0NrB3ecwITbRQ1NqBwprUL3KiBlueOpa3g='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob:; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-QkarSpV7s19OyPHMmWb1uRcGriX8R1CLnnS+ElIdB0w='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob:; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -182,7 +182,8 @@ const region = (lang.split("-")[1] || "").toUpperCase();
 const CURRENCY = ({ US: "USD", GB: "GBP", CH: "CHF", SE: "SEK", NO: "NOK", DK: "DKK", PL: "PLN", CA: "CAD", AU: "AUD", JP: "JPY" })[region] || "EUR";
 const fmtMoney = v => new Intl.NumberFormat(lang, { style: "currency", currency: CURRENCY }).format(v || 0);
 const fmtNum = (v, d = 0) => new Intl.NumberFormat(lang, { maximumFractionDigits: d, minimumFractionDigits: d }).format(v || 0);
-const fmtDate = d => new Date(d).toLocaleDateString(lang, { day: "numeric", month: "short", year: "numeric" });
+// Dates are always day/month/year, like 06/11/2027.
+const fmtDate = d => { const x = new Date(d); if (isNaN(x)) return ""; const p = n => String(n).padStart(2, "0"); return `${p(x.getDate())}/${p(x.getMonth() + 1)}/${x.getFullYear()}` };
 const dateInput = d => { const x = new Date(d); return new Date(x.getTime() - x.getTimezoneOffset() * 60000).toISOString().slice(0, 10) };
 const fromDateInput = (s, keepTime) => { if (!s) return null; const [y, m, d] = s.split("-").map(Number); const t = keepTime ? new Date(keepTime) : new Date(); return new Date(y, m - 1, d, t.getHours(), t.getMinutes(), t.getSeconds()) };
 const startOfDay = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x };
@@ -192,6 +193,9 @@ function addMonths(d, n) { // like Calendar.date(byAdding: .month): clamps to th
   const last = new Date(x.getFullYear(), x.getMonth() + 1, 0).getDate();
   x.setDate(Math.min(day, last)); return x;
 }
+// A time interval is in weeks (everyWeeks, set in the Mac app) or months; weeks win.
+const hasTime = iv => iv.everyWeeks > 0 || iv.everyMonths > 0;
+const nextTime = (iv, d) => iv.everyWeeks > 0 ? new Date(d.getTime() + Math.min(iv.everyWeeks, 5200) * 7 * DAY) : addMonths(d, Math.min(iv.everyMonths, 1200));
 function monthsBetween(a, b) { let m = (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth()); if (addMonths(a, m) > b) m--; return m }
 const num = v => { const n = parseFloat(String(v).replace(",", ".")); return isFinite(n) ? n : null };
 
@@ -240,8 +244,8 @@ function status(b, iv, now = new Date()) {
     parts.push(left < 0 ? `${fmtNum(-left)} ${u} over` : `in ${fmtNum(left)} ${u}`);
     if (left < 0) st = "overdue";
   }
-  if (iv.everyMonths) {
-    const ld = D(last.date), next = addMonths(ld, iv.everyMonths);
+  if (hasTime(iv)) {
+    const ld = D(last.date), next = nextTime(iv, ld);
     const days = Math.trunc((next - now) / DAY), span = next - ld;
     if (span > 0) progress = Math.max(progress ?? 0, (now - ld) / span);
     parts.push(days < 0 ? `${-days} days late` : `by ${fmtDate(next)}`);
@@ -321,7 +325,7 @@ function merge(mine, disk) {
 }
 // Synced or stored data is not trusted: numbers must be numbers, the unit is km or mi, ids are
 // plain, and dates from the future are pulled back to now so they can't win every merge forever.
-const NUMERIC = new Set(["value", "odometer", "volume", "total", "cost", "everyDistance", "everyMonths", "year", "guessedWeekly",
+const NUMERIC = new Set(["value", "odometer", "volume", "total", "cost", "everyDistance", "everyMonths", "everyWeeks", "year", "guessedWeekly",
   "purchaseOdometer", "purchasePrice", "price", "budget", "quantity", "limit", "mileage", "km"]);
 const DATES = new Set(["date", "expires", "since", "until", "purchaseDate", "updatedAt", "installed", "doneAt", "due"]);
 const LISTS = ["odometer", "services", "fuel", "mods", "papers", "wear", "checklists", "restoration", "shopping", "photos", "intervals"];
@@ -555,7 +559,7 @@ function serviceSheet(b, existing) {
   let dateJobs = false;
   const steps = milestones(b, s.odometer ?? mileage(b));
   const near = steps.length ? steps.reduce((m, x) => Math.abs(x - (s.odometer ?? 0)) < Math.abs(m - (s.odometer ?? 0)) ? x : m) : null;
-  const dueByDate = b.intervals.filter(iv => !iv.everyDistance && iv.everyMonths).map(iv => status(b, iv)).filter(d => d.status === "overdue" || d.status === "soon" || d.status === "unknown").map(d => d.title);
+  const dueByDate = b.intervals.filter(iv => !iv.everyDistance && hasTime(iv)).map(iv => status(b, iv)).filter(d => d.status === "overdue" || d.status === "soon" || d.status === "unknown").map(d => d.title);
   openSheet(`${head(existing ? "Edit service" : "Log service")}<form class="form" id="sv">
     <div class="fields2"><label class="f">Date<input id="sd" type="date" value="${dateInput(s.date)}"></label>
     <label class="f">Odometer (${esc(b.unit)})<input id="so" inputmode="decimal" value="${esc(s.odometer ?? "")}"></label></div>
@@ -583,7 +587,7 @@ function serviceSheet(b, existing) {
     const ivFor = t => b.intervals.find(i => i.task === t);
     const drawTasks = () => {
       tl.innerHTML = all.map(t => { const iv = ivFor(t), on = s.tasks.some(x => x.toLowerCase() === t.toLowerCase());
-        const every = iv ? [iv.everyDistance ? `${fmtNum(iv.everyDistance)} ${esc(b.unit)}` : "", iv.everyMonths ? `${esc(iv.everyMonths)} mo` : ""].filter(Boolean).join(" · ") : "extra";
+        const every = iv ? [iv.everyDistance ? `${fmtNum(iv.everyDistance)} ${esc(b.unit)}` : "", iv.everyWeeks > 0 ? `${esc(iv.everyWeeks)} wk` : iv.everyMonths ? `${esc(iv.everyMonths)} mo` : ""].filter(Boolean).join(" · ") : "extra";
         return `<button type="button" class="task${on ? " on" : ""}" data-t="${esc(t)}" aria-pressed="${on}"><span class="box">${on ? "✓" : ""}</span><span>${esc(t)}</span><span class="every">${every}</span></button>` }).join("");
     };
     const picked = () => { const m = +el.querySelector("#ms").value; return [...jobsAt(b, m), ...(dateJobs ? dueByDate : [])] };
