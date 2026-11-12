@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-180.png">
+<title>Garagebook</title>
+<meta name="apple-mobile-web-app-title" content="Garagebook">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: one narrow column like a workshop logbook, a gauge-style odometer up top, tabs pinned at the bottom for one-handed use. */
+:root {
+  --bg: #eef0f1; --surface: #ffffff; --sunk: #e3e6e8; --fg: #16191c; --muted: #5d666e; --line: #d3d8dc;
+  --accent: #1f5f8b; --accent-fg: #ffffff; --ok: #2f8a57; --soon: #d9770a; --over: #c43b2f;
+  --display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "Inter", system-ui, -apple-system, sans-serif;
+  --r: 12px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111417; --surface: #1b1f23; --sunk: #23282d; --fg: #e9edf0; --muted: #98a2ab; --line: #2e353b;
+  --accent: #6fb2e0; --accent-fg: #0d1a24; --ok: #55c486; --soon: #f29a35; --over: #f0675a; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #111417; --surface: #1b1f23; --sunk: #23282d; --fg: #e9edf0; --muted: #98a2ab; --line: #2e353b;
+  --accent: #6fb2e0; --accent-fg: #0d1a24; --ok: #55c486; --soon: #f29a35; --over: #f0675a; color-scheme: dark }
+
+* { box-sizing: border-box }
+html, body { background: var(--bg); color: var(--fg) }
+body { font-family: var(--body); font-size: 15px; line-height: 1.45; -webkit-text-size-adjust: 100% }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg) }
+.wrap { max-width: 620px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 calc(84px + env(safe-area-inset-bottom, 0px)) }
+h1, h2, h3 { font-family: var(--display); font-weight: 600; letter-spacing: .01em; margin: 0; text-wrap: balance }
+h2 { font-size: 22px }
+h3 { font-size: 18px }
+.num { font-variant-numeric: tabular-nums }
+.muted { color: var(--muted) }
+.small { font-size: 13px }
+button, input, select, textarea { font: inherit; color: inherit }
+button { cursor: pointer }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+
+/* Top bar */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); display: flex; align-items: center; gap: 10px; padding-block: 12px 10px }
+.top select { flex: 1; min-width: 0; font-family: var(--display); font-size: 24px; font-weight: 600; background: none; border: 0; padding: 0; appearance: none; -webkit-appearance: none; text-overflow: ellipsis }
+.chip { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 500; border: 1px solid var(--line); background: var(--surface); white-space: nowrap }
+.chip .dot { width: 8px; height: 8px; border-radius: 50% }
+.chip.dirty { border-color: var(--soon); color: var(--soon) }
+.banner { border-radius: var(--r); padding: 12px 14px; background: var(--sunk); font-size: 14px; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap }
+.banner.example { border: 1px dashed var(--muted) }
+
+/* Sections */
+section { display: flex; flex-direction: column; gap: 12px; margin-top: 18px }
+.card { background: var(--surface); border-radius: var(--r); padding: 14px 16px; border: 1px solid var(--line) }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px }
+.stat .label { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted) }
+.stat .value { font-family: var(--display); font-size: 30px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.1 }
+.stat .sub { font-size: 12px; color: var(--muted) }
+
+/* Odometer gauge */
+.odo { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px }
+.odo .digits { display: flex; gap: 3px }
+.odo .digits span { font-family: var(--display); font-weight: 600; font-size: 40px; line-height: 1; background: var(--fg); color: var(--bg); border-radius: 5px; padding: 6px 4px 4px; min-width: 28px; text-align: center; font-variant-numeric: tabular-nums }
+.odo .unit { font-family: var(--display); font-size: 20px; color: var(--muted) }
+
+/* Job rows */
+.jobs { display: flex; flex-direction: column }
+.job { display: grid; grid-template-columns: 32px 1fr auto; gap: 4px 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line) }
+.job:first-child { border-top: 0 }
+.job .icon { grid-row: span 2; width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; background: var(--sunk); color: var(--muted) }
+.job.due .icon { background: color-mix(in srgb, var(--soon) 18%, transparent); color: var(--soon) }
+.job .icon svg { width: 18px; height: 18px }
+.job .name { font-weight: 500; min-width: 0 }
+.job .when { font-size: 13px; color: var(--muted); text-align: right; white-space: nowrap }
+.bar { grid-column: 2 / 4; height: 6px; border-radius: 3px; background: var(--sunk); overflow: hidden }
+.bar i { display: block; height: 100%; border-radius: 3px; background: var(--ok) }
+.bar i.soon { background: var(--soon) } .bar i.over { background: var(--over) }
+.pill { font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 8px; white-space: nowrap }
+.pill.over { background: color-mix(in srgb, var(--over) 16%, transparent); color: var(--over) }
+.pill.soon { background: color-mix(in srgb, var(--soon) 18%, transparent); color: var(--soon) }
+.pill.ok { background: color-mix(in srgb, var(--ok) 16%, transparent); color: var(--ok) }
+
+/* Lists and forms */
+.rows { display: flex; flex-direction: column }
+.row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); align-items: center }
+.row:first-child { border-top: 0 }
+.row > div { min-width: 0 }
+.row .t { font-weight: 500; overflow-wrap: anywhere }
+.row.tap { cursor: pointer }
+.row .warn { color: var(--soon); font-size: 12px }
+form, .form { display: flex; flex-direction: column; gap: 10px }
+label.f { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted) }
+label.f input, label.f select, label.f textarea { font-size: 16px; color: var(--fg); background: var(--sunk); border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; width: 100%; min-width: 0 }
+.fields2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px }
+.check { display: flex; gap: 10px; align-items: center; font-size: 15px; color: var(--fg) }
+.check input { width: 20px; height: 20px; accent-color: var(--accent) }
+.btn { border: 0; border-radius: 10px; padding: 12px 16px; font-weight: 600; background: var(--accent); color: var(--accent-fg) }
+.btn.ghost { background: var(--sunk); color: var(--fg) }
+.btn.danger { background: none; color: var(--over); padding-inline: 0 }
+.btn:disabled { opacity: .45 }
+.btns { display: flex; gap: 10px; flex-wrap: wrap }
+.btns .btn { flex: 1 }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--accent); font-weight: 600 }
+
+/* Task picker */
+.tasks { display: flex; flex-direction: column; max-height: 300px; overflow-y: auto; border: 1px solid var(--line); border-radius: 9px; background: var(--sunk) }
+.task { display: flex; gap: 10px; align-items: center; padding: 9px 12px; border-top: 1px solid var(--line); font-size: 15px; text-align: left; background: none; border-left: 0; border-right: 0; border-bottom: 0; width: 100% }
+.task:first-child { border-top: 0 }
+.task .box { width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--muted); flex: none; display: grid; place-items: center }
+.task.on .box { background: var(--accent); border-color: var(--accent); color: var(--accent-fg) }
+.task .every { margin-left: auto; font-size: 12px; color: var(--muted); white-space: nowrap }
+
+/* Bottom tabs */
+nav.tabs { position: fixed; inset: auto 0 0; z-index: 6; background: var(--surface); border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(5, 1fr); padding: 6px max(8px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px)) }
+nav.tabs button { background: none; border: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; font-weight: 500; color: var(--muted); padding: 6px 0 }
+nav.tabs button svg { width: 22px; height: 22px }
+nav.tabs button[aria-current="page"] { color: var(--accent) }
+
+/* Sheet */
+.scrim { position: fixed; inset: 0; z-index: 20; background: color-mix(in srgb, #000 45%, transparent); display: flex; align-items: flex-end; justify-content: center }
+.sheet { background: var(--bg); width: 100%; max-width: 620px; max-height: 92%; overflow-y: auto; border-radius: 16px 16px 0 0; padding: 16px max(16px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 14px }
+.sheet header { display: flex; justify-content: space-between; align-items: center; gap: 10px }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(80px + env(safe-area-inset-bottom, 0px)); z-index: 30; background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-size: 14px; max-width: calc(100% - 32px) }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px }
+.ph { border: 1px solid var(--line); background: var(--surface); border-radius: var(--r); padding: 0; overflow: hidden; display: flex; flex-direction: column; text-align: left }
+.ph img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--sunk); display: block }
+.ph span { font-size: 13px; padding: 8px 10px; overflow-wrap: anywhere }
+.big { width: 100%; max-width: 100%; border-radius: var(--r); background: var(--sunk); min-height: 120px }
+.receipt { width: 100%; max-height: 260px; object-fit: contain; border-radius: 9px; background: var(--sunk) }
+.steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px }
+@media (prefers-reduced-motion: no-preference) { .sheet { animation: up .18s ease-out } @keyframes up { from { transform: translateY(24px); opacity: .6 } } }
+html { padding-top: env(safe-area-inset-top, 0px) }
+body { margin: 0 }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="top">
+    <select id="bike" aria-label="Bike"></select>
+    <button class="chip" id="syncChip" type="button"><span class="dot"></span><span id="syncText">Sync</span></button>
+  </div>
+  <div id="view"></div>
+</div>
+
+<nav class="tabs" id="tabs">
+  <button type="button" data-tab="overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-6"/></svg>Overview</button>
+  <button type="button" data-tab="log"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 20V5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v15"/><path d="M3 20h13"/><path d="M14 9h2a2 2 0 0 1 2 2v5a1.5 1.5 0 0 0 3 0V8l-3-3"/><path d="M7 8h5"/></svg>Log</button>
+  <button type="button" data-tab="service"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg>Service</button>
+  <button type="button" data-tab="papers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 13h6M10 17h6"/></svg>Papers</button>
+  <button type="button" data-tab="photos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Photos</button>
+</nav>
+
+<script>
+"use strict";
+// ---------- Storage on this phone (a copy; the online garage is the shared one) ----------
+const KEY = "garagebook.web.v1";
+function loadState() { try { return JSON.parse(localStorage.getItem(KEY) || "null") } catch { return null } }
+function persist() { try { localStorage.setItem(KEY, JSON.stringify(S)) } catch {} }
+
+// ---------- Helpers ----------
+const DAY = 86400000;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === "x" ? r : (r & 3 | 8)).toString(16) })).toUpperCase();
+// Garagebook on the Mac reads ISO dates without fractions of a second.
+const iso = d => new Date(d).toISOString().replace(/\.\d{3}Z$/, "Z");
+const D = s => s ? new Date(s) : null;
+const lang = navigator.language || "en";
+const region = (lang.split("-")[1] || "").toUpperCase();
+const CURRENCY = ({ US: "USD", GB: "GBP", CH: "CHF", SE: "SEK", NO: "NOK", DK: "DKK", PL: "PLN", CA: "CAD", AU: "AUD", JP: "JPY" })[region] || "EUR";
+const fmtMoney = v => new Intl.NumberFormat(lang, { style: "currency", currency: CURRENCY }).format(v || 0);
+const fmtNum = (v, d = 0) => new Intl.NumberFormat(lang, { maximumFractionDigits: d, minimumFractionDigits: d }).format(v || 0);
+const fmtDate = d => new Date(d).toLocaleDateString(lang, { day: "numeric", month: "short", year: "numeric" });
+const dateInput = d => { const x = new Date(d); return new Date(x.getTime() - x.getTimezoneOffset() * 60000).toISOString().slice(0, 10) };
+const fromDateInput = (s, keepTime) => { if (!s) return null; const [y, m, d] = s.split("-").map(Number); const t = keepTime ? new Date(keepTime) : new Date(); return new Date(y, m - 1, d, t.getHours(), t.getMinutes(), t.getSeconds()) };
+const startOfDay = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x };
+function addMonths(d, n) { // like Calendar.date(byAdding: .month): clamps to the end of shorter months
+  const x = new Date(d), day = x.getDate();
+  x.setDate(1); x.setMonth(x.getMonth() + n);
+  const last = new Date(x.getFullYear(), x.getMonth() + 1, 0).getDate();
+  x.setDate(Math.min(day, last)); return x;
+}
+function monthsBetween(a, b) { let m = (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth()); if (addMonths(a, m) > b) m--; return m }
+const num = v => { const n = parseFloat(String(v).replace(",", ".")); return isFinite(n) ? n : null };
+
+// ---------- Garage logic (same rules as the Mac and iPhone app) ----------
+function readings(b) {
+  return [
+    ...b.odometer.map(r => ({ date: D(r.date), value: r.value })),
+    ...b.services.filter(s => s.odometer != null).map(s => ({ date: D(s.date), value: s.odometer })),
+    ...b.fuel.map(f => ({ date: D(f.date), value: f.odometer })),
+    ...(b.wear || []).filter(w => w.odometer != null).map(w => ({ date: D(w.date), value: w.odometer })),
+  ].sort((x, y) => x.date - y.date);
+}
+const currentOdo = b => Math.max(0, ...readings(b).map(r => r.value));
+const firstOdo = b => { const v = [...b.odometer.map(r => r.value), ...b.services.filter(s => s.odometer != null).map(s => s.odometer), ...b.fuel.map(f => f.odometer)]; return v.length ? Math.min(...v) : 0 };
+function weeklyAverage(b) {
+  const all = readings(b); if (!all.length) return null;
+  const last = all[all.length - 1];
+  const recent = all.filter(r => r.date >= new Date(last.date - 182 * DAY));
+  const rate = pts => {
+    if (!pts.length) return null;
+    const a = pts[0], top = pts.reduce((m, p) => p.value > m.value ? p : m, pts[0]);
+    const days = (top.date - a.date) / DAY;
+    return days >= 14 && top.value > a.value ? (top.value - a.value) / days * 7 : null;
+  };
+  return rate(recent) ?? rate(all);
+}
+function mileage(b, now = new Date()) {
+  const rec = currentOdo(b), avg = weeklyAverage(b);
+  if (b.autoMileage === false || avg == null) return rec;
+  const tops = readings(b).filter(r => r.value >= rec); if (!tops.length) return rec;
+  const top = tops.reduce((m, r) => r.date > m.date ? r : m);
+  const days = (now - top.date) / DAY;
+  return days > 0 ? rec + avg * days / 7 : rec;
+}
+const covers = (s, task) => (s.tasks || []).some(t => t.toLowerCase() === task.toLowerCase());
+function lastService(b, task) { return b.services.filter(s => covers(s, task)).sort((x, y) => D(y.date) - D(x.date))[0] }
+const ORDER = { overdue: 0, soon: 1, ok: 2, unknown: 3 };
+function status(b, iv, now = new Date()) {
+  const base = { id: iv.id, title: iv.task, status: "unknown", detail: "No service logged yet", progress: null };
+  const last = lastService(b, iv.task); if (!last) return base;
+  const parts = []; let st = "ok", progress = null;
+  const odo = mileage(b, now), u = b.unit;
+  if (iv.everyDistance && last.odometer != null) {
+    const left = last.odometer + iv.everyDistance - odo;
+    progress = (odo - last.odometer) / iv.everyDistance;
+    parts.push(left < 0 ? `${fmtNum(-left)} ${u} over` : `in ${fmtNum(left)} ${u}`);
+    if (left < 0) st = "overdue";
+  }
+  if (iv.everyMonths) {
+    const ld = D(last.date), next = addMonths(ld, iv.everyMonths);
+    const days = Math.trunc((next - now) / DAY), span = next - ld;
+    if (span > 0) progress = Math.max(progress ?? 0, (now - ld) / span);
+    parts.push(days < 0 ? `${-days} days late` : `by ${fmtDate(next)}`);
+    if (days < 0) st = "overdue";
+  }
+  if (st === "ok" && progress != null && progress >= 0.8) st = "soon";
+  return { ...base, status: st, progress, detail: parts.length ? parts.join(" · ") : `Last done ${fmtDate(last.date)}` };
+}
+function paperItems(b) {
+  return b.papers.filter(p => p.expires).map(p => {
+    const days = Math.trunc((D(p.expires) - new Date()) / DAY);
+    return { id: p.id, title: `${p.kind} renewal`, kind: "paper", status: days < 0 ? "overdue" : days <= 30 ? "soon" : "ok",
+             detail: days < 0 ? `Expired ${fmtDate(p.expires)}` : `Expires ${fmtDate(p.expires)}`, progress: null };
+  });
+}
+const WEAR = { "Front tire": [1.6, false, "mm left"], "Rear tire": [1.6, false, "mm left"], "Chain": [1.5, true, "% stretch"], "Front pads": [1.5, false, "mm left"], "Rear pads": [1.5, false, "mm left"] };
+function wearItems(b) {
+  return Object.entries(WEAR).flatMap(([c, [limit, up, unit]]) => {
+    const r = (b.wear || []).filter(w => w.component === c).sort((x, y) => D(y.date) - D(x.date))[0];
+    if (!r || !(up ? r.value >= limit : r.value <= limit)) return [];
+    return [{ id: "wear-" + c, title: `Replace ${c.toLowerCase()}`, status: "overdue", detail: `${fmtNum(r.value, 1)} ${unit}`, progress: null }];
+  });
+}
+function upcoming(b) {
+  const items = [...b.intervals.map(iv => status(b, iv)), ...paperItems(b), ...wearItems(b)];
+  const key = d => [d.status === "unknown" ? 1 : 0, -(d.progress ?? (d.status === "overdue" ? 2 : d.status === "soon" ? 0.9 : 0))];
+  return items.sort((x, y) => { const a = key(x), c = key(y); return a[0] - c[0] || a[1] - c[1] });
+}
+// Papers paid monthly or yearly count every payment from their start (or the purchase date) until today or when stopped.
+function payments(b, p, now = new Date()) {
+  const plan = p.billing || "One-off"; if (plan === "One-off") return 1;
+  const first = p.since || b.purchaseDate; if (!first) return 1;
+  const start = startOfDay(D(first)), until = p.until && D(p.until) < now ? D(p.until) : now, end = startOfDay(until);
+  if (end < start) return 0;
+  const m = monthsBetween(start, end);
+  return (plan === "Monthly" ? m : Math.floor(m / 12)) + 1;
+}
+const paid = (b, p) => (p.cost || 0) * payments(b, p);
+const perMonth = b => b.papers.filter(p => (p.billing || "One-off") !== "One-off" && (!p.until || D(p.until) >= new Date()))
+  .reduce((s, p) => s + (p.billing === "Monthly" ? p.cost : p.cost / 12), 0);
+function costs(b) {
+  const service = b.services.reduce((s, x) => s + (x.cost || 0), 0), fuel = b.fuel.reduce((s, x) => s + (x.total || 0), 0);
+  const mods = (b.mods || []).reduce((s, x) => s + (x.cost || 0), 0), papers = b.papers.reduce((s, p) => s + paid(b, p), 0);
+  const parts = (b.shopping || []).filter(x => x.bought).reduce((s, x) => s + x.price * x.qty, 0);
+  const running = service + fuel + mods + papers + parts;
+  return { service, fuel, mods, papers, parts, running, total: running + (b.purchasePrice || 0) };
+}
+function economy(b) {
+  const fills = [...b.fuel].sort((x, y) => x.odometer - y.odometer);
+  let dist = 0, vol = 0, pending = 0, lastFull = null;
+  for (const f of fills) { pending += f.volume; if (f.full) { if (lastFull) { dist += f.odometer - lastFull.odometer; vol += pending } lastFull = f; pending = 0 } }
+  return vol > 0 ? dist / vol : null;
+}
+const isOil = t => /oil|olie|öl|huile/i.test(t) && !/fork|voor|gabel|fourche|brake|rem|brems|frein/i.test(t);
+function milestones(b, top) {
+  const ds = b.intervals.map(i => i.everyDistance).filter(d => d > 0);
+  const oil = b.intervals.find(i => isOil(i.task) && (i.everyDistance || 0) >= 1000)?.everyDistance;
+  const counts = {}; ds.filter(d => d >= 1000).forEach(d => counts[d] = (counts[d] || 0) + 1);
+  const common = Object.entries(counts).sort((a, c) => c[1] - a[1] || a[0] - c[0])[0];
+  const base = oil || (common && +common[0]); if (!base) return [];
+  const last = Math.max(Math.max(...ds, base), top + base) * 2, out = [];
+  for (let m = base; m <= last; m += base) out.push(m);
+  return out;
+}
+const jobsAt = (b, m) => b.intervals.filter(iv => iv.everyDistance > 0 && m / iv.everyDistance >= 1 && Math.abs(m / iv.everyDistance - Math.round(m / iv.everyDistance)) < 0.001).map(iv => iv.task);
+
+// ---------- Merging with the online copy (newest edit of each bike wins; deletes stay deleted) ----------
+function deletedMap(list) { const m = {}; for (let i = 0; i + 1 < (list || []).length; i += 2) m[list[i]] = list[i + 1]; return m }
+function deletedList(m) { return Object.entries(m).flat() }
+function merge(mine, disk) {
+  const del = deletedMap(mine.deleted);
+  for (const [id, at] of Object.entries(deletedMap(disk.deleted))) del[id] = !del[id] || D(at) > D(del[id]) ? at : del[id];
+  const byId = Object.fromEntries(mine.bikes.map(b => [b.id, b]));
+  for (const b of disk.bikes) { const m = byId[b.id]; if (m && D(m.updatedAt) >= D(b.updatedAt)) continue; byId[b.id] = b }
+  const order = [...mine.bikes.map(b => b.id), ...disk.bikes.map(b => b.id).filter(id => !mine.bikes.some(b => b.id === id))];
+  return { bikes: order.map(id => byId[id]).filter(b => b && !(del[b.id] && D(del[b.id]) >= D(b.updatedAt))), deleted: deletedList(del) };
+}
+function validFile(f) { return f && Array.isArray(f.bikes) && f.bikes.every(b => b && b.id && Array.isArray(b.odometer) && Array.isArray(b.services) && Array.isArray(b.intervals) && Array.isArray(b.fuel) && Array.isArray(b.papers)) }
+
+// ---------- Example bike, shown until you sign in ----------
+function exampleFile() {
+  const ago = d => iso(Date.now() - d * DAY), id = uuid();
+  const iv = (task, everyDistance, everyMonths) => ({ id: uuid(), task, ...(everyDistance ? { everyDistance } : {}), ...(everyMonths ? { everyMonths } : {}) });
+  return { deleted: [], bikes: [{
+    id, updatedAt: ago(0), name: "Example bike", year: 2021, make: "Example", model: "Roadster", vin: "", plate: "", unit: "km",
+    purchaseDate: ago(420), purchasePrice: 6900, story: "",
+    odometer: [{ id: uuid(), date: ago(120), value: 8200 }, { id: uuid(), date: ago(40), value: 10900 }, { id: uuid(), date: ago(3), value: 12150 }],
+    services: [{ id: uuid(), date: ago(330), odometer: 6000, tasks: ["Oil and filter", "Air filter"], shop: "Example garage", cost: 180, notes: "" },
+               { id: uuid(), date: ago(25), odometer: 11200, tasks: ["Chain clean and lube"], shop: "", cost: 0, notes: "" }],
+    intervals: [iv("Oil and filter", 6000, 12), iv("Chain clean and lube", 1000, 1), iv("Air filter", 12000, 24), iv("Spark plugs", 12000, 24), iv("Brake fluid", null, 24), iv("Coolant", null, 24)],
+    fuel: [{ id: uuid(), date: ago(20), odometer: 11450, volume: 11.2, total: 21.9, full: true }, { id: uuid(), date: ago(6), odometer: 11800, volume: 7.9, total: 15.6, full: true }],
+    mods: [], papers: [{ id: uuid(), kind: "Insurance", number: "", provider: "Example insurer", cost: 24, notes: "", billing: "Monthly" }],
+    wear: [], checklists: [], restoration: [], shopping: [], photos: [],
+  }] };
+}
+
+// ---------- State ----------
+let S = loadState();
+if (!S || !validFile(S.file)) S = { file: exampleFile(), example: true, dirty: false, session: null, lastSync: null, bike: null, tab: "overview" };
+let sheet = null, toastTimer = null;
+const bikes = () => S.file.bikes;
+const bike = () => bikes().find(b => b.id === S.bike) || bikes()[0];
+function changed(b) { b.updatedAt = iso(new Date()); S.dirty = true; persist(); render(); syncSoon() }
+function toast(msg) { let t = $(".toast"); if (!t) { t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); document.body.append(t) } t.textContent = msg; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.remove(), 2600) }
+
+// ---------- Icons ----------
+const ICONS = {
+  oil: '<path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"/>',
+  chain: '<rect x="2" y="9" width="10" height="6" rx="3"/><rect x="12" y="9" width="10" height="6" rx="3"/>',
+  air: '<path d="M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h7"/>',
+  spark: '<path d="M13 2L5 14h6l-1 8 8-12h-6z"/>',
+  brake: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>',
+  paper: '<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/>',
+  tire: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>',
+  wrench: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/>',
+};
+function iconFor(item) {
+  const t = item.title.toLowerCase();
+  const k = item.kind === "paper" ? "paper" : /tire|tyre|band/.test(t) ? "tire" : /chain|ketting|kette/.test(t) ? "chain" : /air|lucht|luft/.test(t) ? "air" : /spark|bougie|kerze/.test(t) ? "spark" : /brake|rem|brems|pad/.test(t) ? "brake" : isOil(t) || /fluid|vloeistof|coolant|koel/.test(t) ? "oil" : "wrench";
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
+}
+
+// ---------- Rendering ----------
+function render() {
+  const b = bike();
+  S.bike = b?.id ?? null;
+  $("#bike").innerHTML = bikes().map(x => `<option value="${esc(x.id)}"${x.id === S.bike ? " selected" : ""}>${esc(x.name)}</option>`).join("");
+  const chip = $("#syncChip"), text = $("#syncText");
+  chip.classList.toggle("dirty", !!S.dirty);
+  chip.querySelector(".dot").style.background = !S.session ? "var(--muted)" : lastError ? "var(--over)" : S.dirty || syncing ? "var(--soon)" : "var(--ok)";
+  text.textContent = !S.session ? "Sign in" : syncing ? "Syncing…" : lastError ? "Not synced" : S.dirty ? "Waiting to sync" : "Synced";
+  document.querySelectorAll("#tabs button").forEach(t => t.setAttribute("aria-current", t.dataset.tab === S.tab ? "page" : "false"));
+  const v = $("#view");
+  if (!b) { v.innerHTML = `<section><div class="card"><h2>No bikes</h2><p class="muted">${S.session ? "Your online garage is empty. Sign in on the Mac app with the same account to upload your bikes, or add one here." : "Sign in to see your garage."}</p><div class="btns">${S.session ? '<button class="btn" data-act="newBike">Add bike</button>' : '<button class="btn" data-act="account">Sign in</button>'}</div></div></section>`; return }
+  const banner = S.example ? `<section><div class="banner example"><span>This is an <b>example bike</b>. Sign in to see your own garage.</span><button class="linkbtn" data-act="account">Sign in</button></div></section>`
+    : lastError ? `<section><div class="banner"><span>Not synced: ${esc(lastError)} Your changes are kept on this phone.</span><button class="linkbtn" data-act="sync">Try again</button></div></section>` : "";
+  v.innerHTML = banner + ({ overview, log, service, papers, photos })[S.tab](b);
+  loadPhotos(v);
+}
+
+function jobRow(it) {
+  const due = it.status === "overdue" || it.status === "soon";
+  const pct = it.progress == null ? null : Math.max(0, Math.min(1, it.progress));
+  const cls = it.status === "overdue" ? "over" : it.status === "soon" ? "soon" : "";
+  return `<div class="job${due ? " due" : ""}">
+    <div class="icon" aria-hidden="true">${iconFor(it)}</div>
+    <div class="name">${esc(it.title)}</div>
+    <div class="when">${it.status === "unknown" ? "No record" : esc(it.detail)}</div>
+    ${pct != null ? `<div class="bar" role="progressbar" aria-valuenow="${Math.round(pct * 100)}" aria-valuemin="0" aria-valuemax="100" aria-label="${esc(it.title)}"><i class="${cls}" style="width:${(pct * 100).toFixed(1)}%"></i></div>` : `<div class="small muted" style="grid-column:2/4">${it.status === "unknown" ? "Log it once to start the countdown" : ""}</div>`}
+  </div>`;
+}
+
+function overview(b) {
+  const now = mileage(b), est = now > currentOdo(b) + 0.5, avg = weeklyAverage(b);
+  const digits = String(Math.round(now)).padStart(6, "0").split("").map(d => `<span>${d}</span>`).join("");
+  const up = upcoming(b), next = up.find(x => x.status !== "unknown"), c = costs(b), pm = perMonth(b), econ = economy(b);
+  const vol = b.unit === "km" ? "L" : "gal";
+  return `<section>
+    <div class="card">
+      <div class="odo"><div><div class="stat"><div class="label">${est ? "Odometer, estimated" : "Odometer"}</div></div><div class="digits num" aria-label="${fmtNum(now)} ${b.unit}">${digits}</div></div><div class="unit">${esc(b.unit)}</div></div>
+      <div class="small muted" style="margin-top:8px">${est ? `Last reading ${fmtNum(currentOdo(b))} ${b.unit}, plus your weekly average since.` : avg == null ? "Log readings two weeks apart to get a weekly average." : "From your last reading."}</div>
+    </div>
+    <div class="grid2">
+      <div class="card stat"><div class="label">Per week</div><div class="value">${avg == null ? "—" : fmtNum(avg)}</div><div class="sub">${b.unit}, from your readings</div></div>
+      <div class="card stat"><div class="label">Next job</div><div class="value" style="font-size:22px">${next ? esc(next.title) : "—"}</div><div class="sub">${next ? esc(next.detail) : "Nothing scheduled"}</div></div>
+    </div>
+    <div class="btns"><button class="btn" data-go="log">Log odometer or fuel</button><button class="btn ghost" data-act="newService">Log service</button></div>
+  </section>
+  <section><h2>Upcoming maintenance</h2><div class="card"><div class="jobs">${up.map(jobRow).join("") || '<p class="muted">No schedule yet. Add intervals in the Mac app.</p>'}</div></div></section>
+  <section><h2>Costs</h2>
+    <div class="grid2">
+      <div class="card stat"><div class="label">Total cost to own</div><div class="value">${fmtMoney(c.total)}</div><div class="sub">${b.purchasePrice ? `incl. ${fmtMoney(b.purchasePrice)} purchase` : "Add the purchase price on the Mac"}</div></div>
+      <div class="card stat"><div class="label">Every month</div><div class="value">${fmtMoney(pm)}</div><div class="sub">insurance and papers</div></div>
+    </div>
+    <div class="card"><div class="rows">
+      ${[["Service", c.service], ["Fuel", c.fuel], ["Papers and insurance", c.papers], ["Mods", c.mods], ["Parts bought", c.parts]].map(([k, val]) => `<div class="row"><span class="muted">${k}</span><span class="num">${fmtMoney(val)}</span></div>`).join("")}
+      <div class="row"><span class="muted">Economy</span><span class="num">${econ ? `${fmtNum(econ, 1)} ${b.unit}/${vol}` : "—"}</span></div>
+    </div></div>
+  </section>`;
+}
+
+function log(b) {
+  const vol = b.unit === "km" ? "litres" : "gallons";
+  const odo = [...b.odometer].sort((x, y) => D(y.date) - D(x.date));
+  const chrono = [...b.odometer].sort((x, y) => D(x.date) - D(y.date));
+  const low = new Set(chrono.filter((r, i) => i > 0 && r.value < chrono[i - 1].value).map(r => r.id));
+  const fuel = [...b.fuel].sort((x, y) => D(y.date) - D(x.date));
+  return `<section><h2>Odometer</h2><div class="card">
+    <form id="odoForm"><div class="fields2">
+      <label class="f">Reading (${b.unit})<input id="odoVal" inputmode="decimal" required placeholder="${fmtNum(Math.round(mileage(b)))}"></label>
+      <label class="f">Date<input id="odoDate" type="date" value="${dateInput(new Date())}"></label>
+    </div><button class="btn">Save reading</button></form></div>
+    <div class="card"><h3>Readings</h3><div class="rows">${odo.map(r => `<div class="row tap" data-edit-odo="${esc(r.id)}"><div><div class="t num">${fmtNum(r.value)} ${b.unit}</div><div class="small muted">${fmtDate(r.date)}${low.has(r.id) ? ' · <span class="warn">lower than the reading before</span>' : ""}</div></div><span class="linkbtn">Edit</span></div>`).join("") || '<p class="muted">No readings yet.</p>'}</div></div>
+  </section>
+  <section><h2>Fuel</h2><div class="card">
+    <form id="fuelForm"><div class="fields2">
+      <label class="f">Odometer (${b.unit})<input id="fOdo" inputmode="decimal" required placeholder="${fmtNum(Math.round(mileage(b)))}"></label>
+      <label class="f">Amount (${vol})<input id="fVol" inputmode="decimal" required></label>
+      <label class="f">Paid<input id="fTot" inputmode="decimal" required></label>
+      <label class="f">Date<input id="fDate" type="date" value="${dateInput(new Date())}"></label>
+    </div><label class="check"><input type="checkbox" id="fFull" checked> Filled to the top</label><button class="btn">Save fill</button></form></div>
+    <div class="card"><h3>Fills</h3><div class="rows">${fuel.map(f => `<div class="row tap" data-edit-fuel="${esc(f.id)}"><div><div class="t num">${fmtNum(f.volume, 2)} ${b.unit === "km" ? "L" : "gal"} · ${fmtMoney(f.total)}</div><div class="small muted">${fmtDate(f.date)} · ${fmtNum(f.odometer)} ${b.unit}${f.full ? "" : " · not full"}</div></div><span class="linkbtn">Edit</span></div>`).join("") || '<p class="muted">No fills yet.</p>'}</div></div>
+  </section>`;
+}
+
+function service(b) {
+  const list = [...b.services].sort((x, y) => D(y.date) - D(x.date));
+  return `<section><div class="btns"><button class="btn" data-act="newService">Log service</button></div>
+    <div class="card"><div class="rows">${list.map(s => `<div class="row tap" data-edit-service="${esc(s.id)}"><div><div class="t">${esc((s.tasks || []).join(", ") || "Service")}</div><div class="small muted">${fmtDate(s.date)}${s.odometer != null ? ` · ${fmtNum(s.odometer)} ${b.unit}` : ""}${s.shop ? ` · ${esc(s.shop)}` : ""}</div></div><span class="num">${fmtMoney(s.cost)}</span></div>`).join("") || '<p class="muted">No services logged yet.</p>'}</div></div>
+  </section>`;
+}
+
+function papers(b) {
+  const list = [...b.papers].sort((x, y) => (D(x.expires) || 8.64e15) - (D(y.expires) || 8.64e15));
+  const pm = perMonth(b), total = b.papers.reduce((s, p) => s + paid(b, p), 0);
+  return `<section>
+    <div class="grid2"><div class="card stat"><div class="label">Every month</div><div class="value">${fmtMoney(pm)}</div></div><div class="card stat"><div class="label">Paid in total</div><div class="value">${fmtMoney(total)}</div></div></div>
+    <div class="btns"><button class="btn" data-act="newPaper">Add paper or insurance</button></div>
+    <div class="card"><div class="rows">${list.map(p => {
+      const item = paperItems(b).find(i => i.id === p.id), plan = p.billing || "One-off";
+      return `<div class="row tap" data-edit-paper="${esc(p.id)}"><div><div class="t">${esc(p.kind)}${p.provider ? ` · ${esc(p.provider)}` : ""}</div><div class="small muted">${plan === "One-off" ? fmtMoney(p.cost) : `${fmtMoney(p.cost)}/${plan === "Monthly" ? "month" : "year"} · ${fmtMoney(paid(b, p))} paid so far`}${item ? ` · ${esc(item.detail)}` : ""}</div></div>${item ? `<span class="pill ${item.status === "overdue" ? "over" : item.status}">${item.status === "overdue" ? "Expired" : item.status === "soon" ? "Soon" : "OK"}</span>` : ""}</div>`;
+    }).join("") || '<p class="muted">No papers yet.</p>'}</div></div>
+  </section>`;
+}
+
+// ---------- Sheets ----------
+function openSheet(html, onMount) {
+  closeSheet();
+  sheet = document.createElement("div"); sheet.className = "scrim";
+  sheet.innerHTML = `<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;
+  sheet.addEventListener("click", e => { if (e.target === sheet || e.target.closest("[data-close]")) closeSheet() });
+  document.body.append(sheet); onMount?.(sheet.querySelector(".sheet"));
+}
+function closeSheet() { sheet?.remove(); sheet = null }
+const head = t => `<header><h2>${esc(t)}</h2><button class="linkbtn" data-close type="button">Close</button></header>`;
+
+function odoSheet(b, r) {
+  openSheet(`${head("Edit reading")}<form class="form" id="eOdo">
+    <label class="f">Reading (${b.unit})<input id="eVal" inputmode="decimal" value="${r.value}" required></label>
+    <label class="f">Date<input id="eDate" type="date" value="${dateInput(r.date)}"></label>
+    <button class="btn">Save</button><button class="btn danger" type="button" id="eDel">Delete reading</button></form>`, el => {
+    el.querySelector("#eOdo").onsubmit = e => { e.preventDefault(); const v = num(el.querySelector("#eVal").value); if (v == null) return; r.value = v; r.date = iso(fromDateInput(el.querySelector("#eDate").value, r.date)); closeSheet(); changed(b); toast("Reading updated") };
+    confirmDelete(el.querySelector("#eDel"), () => { b.odometer = b.odometer.filter(x => x.id !== r.id); closeSheet(); changed(b); toast("Reading deleted") });
+  });
+}
+
+function fuelSheet(b, f) {
+  openSheet(`${head("Edit fill")}<form class="form" id="eFuel"><div class="fields2">
+    <label class="f">Odometer<input id="a" inputmode="decimal" value="${f.odometer}" required></label>
+    <label class="f">Amount<input id="v" inputmode="decimal" value="${f.volume}" required></label>
+    <label class="f">Paid<input id="t" inputmode="decimal" value="${f.total}" required></label>
+    <label class="f">Date<input id="d" type="date" value="${dateInput(f.date)}"></label></div>
+    <label class="check"><input type="checkbox" id="full"${f.full ? " checked" : ""}> Filled to the top</label>
+    <button class="btn">Save</button><button class="btn danger" type="button" id="del">Delete fill</button></form>`, el => {
+    el.querySelector("#eFuel").onsubmit = e => { e.preventDefault(); const a = num(el.querySelector("#a").value), v = num(el.querySelector("#v").value), t = num(el.querySelector("#t").value); if ([a, v, t].includes(null)) return;
+      Object.assign(f, { odometer: a, volume: v, total: t, full: el.querySelector("#full").checked, date: iso(fromDateInput(el.querySelector("#d").value, f.date)) }); closeSheet(); changed(b); toast("Fill updated") };
+    confirmDelete(el.querySelector("#del"), () => { b.fuel = b.fuel.filter(x => x.id !== f.id); closeSheet(); changed(b); toast("Fill deleted") });
+  });
+}
+
+function confirmDelete(btn, run) {
+  let armed = false;
+  btn.onclick = () => { if (armed) return run(); armed = true; btn.textContent = "Tap again to delete"; setTimeout(() => { armed = false; btn.textContent = btn.textContent.replace("Tap again to delete", "Delete") }, 3000) };
+}
+
+function serviceSheet(b, existing) {
+  const s = existing ? JSON.parse(JSON.stringify(existing)) : { id: uuid(), date: iso(new Date()), odometer: Math.round(mileage(b)), tasks: [], shop: "", cost: 0, notes: "" };
+  const all = [...new Set([...b.intervals.map(i => i.task), ...s.tasks])];
+  let dateJobs = false;
+  const steps = milestones(b, s.odometer ?? mileage(b));
+  const near = steps.length ? steps.reduce((m, x) => Math.abs(x - (s.odometer ?? 0)) < Math.abs(m - (s.odometer ?? 0)) ? x : m) : null;
+  const dueByDate = b.intervals.filter(iv => !iv.everyDistance && iv.everyMonths).map(iv => status(b, iv)).filter(d => d.status === "overdue" || d.status === "soon" || d.status === "unknown").map(d => d.title);
+  openSheet(`${head(existing ? "Edit service" : "Log service")}<form class="form" id="sv">
+    <div class="fields2"><label class="f">Date<input id="sd" type="date" value="${dateInput(s.date)}"></label>
+    <label class="f">Odometer (${b.unit})<input id="so" inputmode="decimal" value="${s.odometer ?? ""}"></label></div>
+    ${steps.length ? `<div class="card form" style="background:var(--sunk)"><h3>Quick add</h3>
+      <label class="f">Service<select id="ms">${steps.map(m => `<option value="${m}"${m === near ? " selected" : ""}>${fmtNum(m)} ${b.unit} service</option>`).join("")}</select></label>
+      ${dueByDate.length ? `<label class="check"><input type="checkbox" id="dj"> Also jobs due by date (${dueByDate.length})</label>` : ""}
+      <button class="btn ghost" type="button" id="tick"></button>
+      <p class="small muted" style="margin:0">Ticks every job due at this mileage. Untick anything you're skipping below.</p></div>` : ""}
+    <div class="f small muted">Jobs done</div><div class="tasks" id="tl"></div>
+    <div class="fields2"><label class="f">Other job<input id="cj" placeholder="e.g. New grips"></label><div style="display:flex;align-items:flex-end"><button class="btn ghost" type="button" id="addj" style="width:100%">Add job</button></div></div>
+    <div class="fields2"><label class="f">Shop<input id="sh" value="${esc(s.shop)}"></label><label class="f">Cost<input id="sc" inputmode="decimal" value="${s.cost || ""}"></label></div>
+    <label class="f">Notes<textarea id="sn" rows="2">${esc(s.notes)}</textarea></label>
+    <div class="form" id="rc">${s.receipt ? `<img class="receipt" data-photo="${esc(s.receipt)}" alt="Receipt">` : ""}${S.session ? `<button class="btn ghost" type="button" id="addr">${s.receipt ? "Replace receipt photo" : "Add receipt photo"}</button>` : ""}</div>
+    <button class="btn">${existing ? "Save" : "Save service"}</button>${existing ? '<button class="btn danger" type="button" id="sdel">Delete service</button>' : ""}</form>`, el => {
+    const tl = el.querySelector("#tl"), tick = el.querySelector("#tick");
+    loadPhotos(el);
+    el.querySelector("#addr")?.addEventListener("click", async () => {
+      const file = await pickPhoto(); if (!file) return;
+      const btn = el.querySelector("#addr"); btn.disabled = true; btn.textContent = "Uploading…";
+      try { s.receipt = await uploadPhoto(file); el.querySelector("#rc").querySelector("img")?.remove();
+        btn.insertAdjacentHTML("beforebegin", `<img class="receipt" data-photo="${esc(s.receipt)}" alt="Receipt">`); loadPhotos(el); btn.textContent = "Replace receipt photo" }
+      catch (err) { btn.textContent = err.message || "Upload failed" }
+      btn.disabled = false;
+    });
+    const ivFor = t => b.intervals.find(i => i.task === t);
+    const drawTasks = () => {
+      tl.innerHTML = all.map(t => { const iv = ivFor(t), on = s.tasks.some(x => x.toLowerCase() === t.toLowerCase());
+        const every = iv ? [iv.everyDistance ? `${fmtNum(iv.everyDistance)} ${b.unit}` : "", iv.everyMonths ? `${iv.everyMonths} mo` : ""].filter(Boolean).join(" · ") : "extra";
+        return `<button type="button" class="task${on ? " on" : ""}" data-t="${esc(t)}" aria-pressed="${on}"><span class="box">${on ? "✓" : ""}</span><span>${esc(t)}</span><span class="every">${every}</span></button>` }).join("");
+    };
+    const picked = () => { const m = +el.querySelector("#ms").value; return [...jobsAt(b, m), ...(dateJobs ? dueByDate : [])] };
+    const drawTick = () => { if (tick) { const n = picked().length; tick.textContent = `Tick the ${n} jobs for this service`; tick.disabled = !n } };
+    drawTasks(); drawTick();
+    tl.onclick = e => { const t = e.target.closest(".task")?.dataset.t; if (!t) return; const i = s.tasks.findIndex(x => x.toLowerCase() === t.toLowerCase()); i >= 0 ? s.tasks.splice(i, 1) : s.tasks.push(t); drawTasks() };
+    el.querySelector("#ms")?.addEventListener("change", drawTick);
+    el.querySelector("#dj")?.addEventListener("change", e => { dateJobs = e.target.checked; drawTick() });
+    tick?.addEventListener("click", () => {
+      const p = picked(), sched = b.intervals.map(i => i.task.toLowerCase());
+      const custom = s.tasks.filter(t => !sched.includes(t.toLowerCase()));
+      s.tasks = [...p, ...custom.filter(t => !p.includes(t))];
+      if (!el.querySelector("#so").value) el.querySelector("#so").value = el.querySelector("#ms").value;
+      drawTasks(); toast(`${p.length} jobs ticked`);
+    });
+    el.querySelector("#addj").onclick = () => { const v = el.querySelector("#cj").value.trim(); if (!v) return; if (!all.includes(v)) all.push(v); if (!s.tasks.includes(v)) s.tasks.push(v); el.querySelector("#cj").value = ""; drawTasks() };
+    el.querySelector("#sv").onsubmit = e => {
+      e.preventDefault();
+      s.date = iso(fromDateInput(el.querySelector("#sd").value, s.date));
+      const o = num(el.querySelector("#so").value); if (o == null) delete s.odometer; else s.odometer = o;
+      s.shop = el.querySelector("#sh").value.trim(); s.cost = num(el.querySelector("#sc").value) || 0; s.notes = el.querySelector("#sn").value;
+      if (existing) Object.keys(existing).forEach(k => delete existing[k]), Object.assign(existing, s); else b.services.push(s);
+      closeSheet(); changed(b); toast(existing ? "Service updated" : "Service logged");
+    };
+    const del = el.querySelector("#sdel"); if (del) confirmDelete(del, () => { b.services = b.services.filter(x => x.id !== existing.id); closeSheet(); changed(b); toast("Service deleted") });
+  });
+}
+
+const KINDS = ["Registration", "Insurance", "Inspection", "License", "Title", "Warranty", "Other"];
+function paperSheet(b, existing) {
+  const p = existing ? JSON.parse(JSON.stringify(existing)) : { id: uuid(), kind: "Insurance", number: "", provider: "", cost: 0, notes: "", billing: "Monthly" };
+  openSheet(`${head(existing ? "Edit paper" : "Add paper or insurance")}<form class="form" id="pf">
+    <div class="fields2"><label class="f">Type<select id="pk">${KINDS.map(k => `<option${k === p.kind ? " selected" : ""}>${k}</option>`).join("")}</select></label>
+    <label class="f">Payment<select id="pb">${["One-off", "Monthly", "Yearly"].map(k => `<option${k === (p.billing || "One-off") ? " selected" : ""}>${k}</option>`).join("")}</select></label></div>
+    <div class="fields2"><label class="f" id="pcl">Cost<input id="pc" inputmode="decimal" value="${p.cost || ""}"></label><label class="f">Expires<input id="pe" type="date" value="${p.expires ? dateInput(p.expires) : ""}"></label></div>
+    <div id="period" class="fields2"><label class="f">Paying since<input id="ps" type="date" value="${p.since ? dateInput(p.since) : ""}"></label><label class="f">Stopped paying<input id="pu" type="date" value="${p.until ? dateInput(p.until) : ""}"></label></div>
+    <p class="small muted" id="pinfo" style="margin:0"></p>
+    <div class="fields2"><label class="f">Provider or office<input id="pp" value="${esc(p.provider)}"></label><label class="f">Number<input id="pn" value="${esc(p.number)}"></label></div>
+    <label class="f">Notes<textarea id="pt" rows="2">${esc(p.notes)}</textarea></label>
+    <button class="btn">Save</button>${existing ? '<button class="btn danger" type="button" id="pdel">Delete</button>' : ""}</form>`, el => {
+    const read = () => { p.kind = el.querySelector("#pk").value; p.billing = el.querySelector("#pb").value; p.cost = num(el.querySelector("#pc").value) || 0;
+      const sv = el.querySelector("#ps").value, uv = el.querySelector("#pu").value, ev = el.querySelector("#pe").value;
+      if (sv) p.since = iso(fromDateInput(sv)); else delete p.since; if (uv) p.until = iso(fromDateInput(uv)); else delete p.until; if (ev) p.expires = iso(fromDateInput(ev)); else delete p.expires };
+    const info = () => { read(); const once = p.billing === "One-off";
+      el.querySelector("#period").hidden = once; el.querySelector("#pcl").firstChild.textContent = once ? "Cost" : p.billing === "Monthly" ? "Cost per month" : "Cost per year";
+      const n = payments(b, p);
+      el.querySelector("#pinfo").textContent = once ? "" : `${!p.since ? (b.purchaseDate ? `Counts from the purchase date, ${fmtDate(b.purchaseDate)}. ` : "Add a start date. ") : ""}${n} payment${n === 1 ? "" : "s"} · ${fmtMoney(paid(b, p))} paid so far.` };
+    el.querySelector("#pf").addEventListener("input", info); info();
+    el.querySelector("#pf").onsubmit = e => { e.preventDefault(); read(); p.provider = el.querySelector("#pp").value.trim(); p.number = el.querySelector("#pn").value.trim(); p.notes = el.querySelector("#pt").value;
+      if (existing) Object.keys(existing).forEach(k => delete existing[k]), Object.assign(existing, p); else b.papers.push(p);
+      closeSheet(); changed(b); toast("Saved") };
+    const del = el.querySelector("#pdel"); if (del) confirmDelete(del, () => { b.papers = b.papers.filter(x => x.id !== existing.id); closeSheet(); changed(b); toast("Deleted") });
+  });
+}
+
+// ---------- Online storage (Supabase) ----------
+// Both values are meant to be public; each account can only reach its own garage and photos (row level security).
+const SUPABASE_URL = "https://gnroryugxfcqgwrbhkmn.supabase.co";
+const SUPABASE_KEY = "sb_publishable_96rxQS1XCdb3Lt6sdXYmEQ_PA7htKIX";
+const cloudReady = !SUPABASE_KEY.startsWith("YOUR-") && !SUPABASE_URL.includes("YOUR-PROJECT");
+let syncing = false, syncTimer = null, lastError = null;
+
+async function api(path, { method = "GET", body, token, prefer, raw, type } = {}) {
+  const headers = { apikey: SUPABASE_KEY };
+  if (!raw) headers["Content-Type"] = "application/json";
+  if (type) headers["Content-Type"] = type;
+  if (token) headers.Authorization = `Bearer ${token}`;
+  if (prefer) headers.Prefer = prefer;
+  if (raw && method === "POST") headers["x-upsert"] = "true";
+  const r = await fetch(`${SUPABASE_URL}/${path}`, { method, headers, body: raw ?? (body ? JSON.stringify(body) : undefined) });
+  if (r.ok && method === "GET" && path.startsWith("storage/")) return r.blob();
+  const text = await r.text(); let json = null; try { json = text ? JSON.parse(text) : null } catch {}
+  if (!r.ok) throw new Error(json?.error_description || json?.msg || json?.message || (typeof json?.error === "string" ? json.error : null) || `The server answered ${r.status}.`);
+  return json;
+}
+function keepSession(j) {
+  if (!j?.access_token || !j?.user?.id) throw new Error("Sign-in didn't return a session.");
+  S.session = { access: j.access_token, refresh: j.refresh_token, expires: Date.now() + (j.expires_in || 3600) * 1000, id: j.user.id };
+}
+function signOut() { S.session = null; S.file = exampleFile(); S.example = true; S.dirty = false; S.lastSync = null; persist(); closeSheet(); render() }
+async function freshToken() {
+  const s = S.session; if (!s) return null;
+  if (s.expires - 60000 > Date.now()) return s.access;
+  try { keepSession(await api("auth/v1/token?grant_type=refresh_token", { method: "POST", body: { refresh_token: s.refresh } })); persist(); return S.session.access }
+  catch { S.session = null; persist(); throw new Error("Signed out. Sign in with your passkey again to keep syncing.") }
+}
+
+// ---------- Passkeys (saved in iCloud Keychain, so the same one works on iPhone and Mac) ----------
+const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const unb64u = s => { s = s.replace(/-/g, "+").replace(/_/g, "/"); s += "=".repeat((4 - s.length % 4) % 4); return Uint8Array.from(atob(s), c => c.charCodeAt(0)) };
+const passkeyFn = (route, body, token) => api(`functions/v1/passkey/${route}`, { method: "POST", body, token });
+async function passkeySignIn() {
+  const { challengeId, options: o } = await passkeyFn("login-options", {});
+  const cred = await navigator.credentials.get({ publicKey: { challenge: unb64u(o.challenge), rpId: o.rpId, timeout: o.timeout, userVerification: o.userVerification,
+    allowCredentials: (o.allowCredentials || []).map(c => ({ ...c, id: unb64u(c.id) })) } });
+  if (!cred) throw new Error("No passkey was chosen.");
+  const r = cred.response;
+  return passkeyFn("login-verify", { challengeId, response: { id: cred.id, rawId: b64u(cred.rawId), type: cred.type, authenticatorAttachment: cred.authenticatorAttachment ?? undefined,
+    clientExtensionResults: cred.getClientExtensionResults?.() ?? {},
+    response: { clientDataJSON: b64u(r.clientDataJSON), authenticatorData: b64u(r.authenticatorData), signature: b64u(r.signature), userHandle: r.userHandle ? b64u(r.userHandle) : undefined } } });
+}
+async function passkeyCreate() {
+  const token = S.session ? await freshToken() : null;
+  const { challengeId, options: o } = await passkeyFn("register-options", {}, token);
+  const cred = await navigator.credentials.create({ publicKey: { challenge: unb64u(o.challenge), rp: o.rp, timeout: o.timeout, attestation: o.attestation,
+    user: { id: unb64u(o.user.id), name: o.user.name, displayName: o.user.displayName || "Garagebook" },
+    pubKeyCredParams: o.pubKeyCredParams, authenticatorSelection: o.authenticatorSelection,
+    excludeCredentials: (o.excludeCredentials || []).map(c => ({ ...c, id: unb64u(c.id) })) } });
+  if (!cred) throw new Error("No passkey was made.");
+  const r = cred.response;
+  return passkeyFn("register-verify", { challengeId, response: { id: cred.id, rawId: b64u(cred.rawId), type: cred.type, authenticatorAttachment: cred.authenticatorAttachment ?? undefined,
+    clientExtensionResults: cred.getClientExtensionResults?.() ?? {},
+    response: { clientDataJSON: b64u(r.clientDataJSON), attestationObject: b64u(r.attestationObject), transports: r.getTransports?.() ?? [] } } });
+}
+const passkeyMessage = err => err?.name === "NotAllowedError" ? "Cancelled, or no passkey for Garagebook on this device." : err?.message || "That didn't work.";
+
+// The Mac app opens this page to sign in: ?app=mac&state=… → after the passkey, hand the session back to the app.
+const appLogin = (() => { const q = new URLSearchParams(location.search); return q.get("app") === "mac" && q.get("state") ? q.get("state") : null })();
+function handBack(j) {
+  const q = new URLSearchParams({ state: appLogin, access: j.access_token, refresh: j.refresh_token, expires_in: String(j.expires_in || 3600), id: j.user.id });
+  location.href = `garagebook://auth?${q}`;
+}
+
+// The example bike never goes online: the first sync starts from what's stored online.
+async function firstSync() { if (S.example) { S.file = { bikes: [], deleted: [] }; S.example = false; S.dirty = false } persist(); await sync() }
+const summary = f => JSON.stringify({ b: f.bikes.map(b => [b.id, b.updatedAt]).sort(), d: [...(f.deleted || [])].sort() });
+async function sync() {
+  if (!cloudReady || !S.session || syncing || appLogin) return;
+  syncing = true; render();
+  try {
+    const token = await freshToken();
+    const rows = await api(`rest/v1/garages?select=data&user_id=eq.${S.session.id}`, { token });
+    const remote = rows?.[0]?.data;
+    if (remote && validFile(remote)) S.file = merge(S.file, remote);
+    if (!remote || summary(S.file) !== summary(remote) || S.dirty) {
+      await api("rest/v1/garages?on_conflict=user_id", { method: "POST", token, prefer: "resolution=merge-duplicates,return=minimal",
+        body: { user_id: S.session.id, data: { bikes: S.file.bikes, deleted: S.file.deleted || [] }, updated_at: iso(new Date()) } });
+    }
+    S.dirty = false; S.lastSync = iso(new Date()); lastError = null;
+  } catch (err) { lastError = err.message || "Couldn't reach the server." }
+  syncing = false; persist(); render();
+}
+function syncSoon() { clearTimeout(syncTimer); syncTimer = setTimeout(sync, 1200) }
+setInterval(() => { if (document.visibilityState === "visible") sync() }, 15000);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") sync() });
+window.addEventListener("online", sync);
+
+// ---------- Photos and receipts (private storage, folder per account) ----------
+const photoURLs = {};
+async function photoURL(name) {
+  if (photoURLs[name]) return photoURLs[name];
+  const blob = await api(`storage/v1/object/authenticated/garage/${S.session.id}/${encodeURIComponent(name)}`, { token: await freshToken() });
+  return photoURLs[name] = URL.createObjectURL(blob);
+}
+function loadPhotos(root = document) {
+  if (!S.session) return;
+  root.querySelectorAll("img[data-photo]:not([src])").forEach(img => photoURL(img.dataset.photo).then(u => img.src = u).catch(() => img.alt = "Not uploaded yet"));
+}
+async function shrink(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = url });
+    const scale = Math.min(1, 2000 / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement("canvas"); c.width = Math.round(img.naturalWidth * scale); c.height = Math.round(img.naturalHeight * scale);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    return await new Promise(ok => c.toBlob(ok, "image/jpeg", 0.85));
+  } finally { URL.revokeObjectURL(url) }
+}
+async function uploadPhoto(file) {
+  if (!S.session) throw new Error("Sign in first.");
+  const blob = await shrink(file), name = `${uuid()}.jpg`;
+  await api(`storage/v1/object/garage/${S.session.id}/${name}`, { method: "POST", raw: blob, type: "image/jpeg", token: await freshToken() });
+  photoURLs[name] = URL.createObjectURL(blob);
+  return name;
+}
+function pickPhoto() {
+  return new Promise(resolve => {
+    const input = document.createElement("input"); input.type = "file"; input.accept = "image/*";
+    input.onchange = () => resolve(input.files?.[0] ?? null); input.click();
+  });
+}
+const PHOTO_KINDS = ["General", "Before", "After", "Receipt"];
+function photos(b) {
+  if (!S.session) return `<section><div class="card"><h2>Photos</h2><p class="muted">Sign in to see the photos and receipts from your Mac.</p><button class="btn" data-act="account">Sign in</button></div></section>`;
+  const list = [...b.photos].sort((x, y) => D(y.date) - D(x.date));
+  const receipts = b.services.filter(s => s.receipt).sort((x, y) => D(y.date) - D(x.date));
+  return `<section><div class="btns"><button class="btn" data-act="addPhoto">Add photo</button></div>
+    <div class="gallery">${list.map(p => `<button type="button" class="ph" data-photo-id="${esc(p.id)}"><img data-photo="${esc(p.filename)}" alt="${esc(p.caption || p.kind)}"><span>${esc(p.caption || p.kind)}</span></button>`).join("") || '<p class="muted">No photos yet.</p>'}</div></section>
+    ${receipts.length ? `<section><h2>Receipts</h2><div class="gallery">${receipts.map(s => `<button type="button" class="ph" data-edit-service="${esc(s.id)}"><img data-photo="${esc(s.receipt)}" alt="Receipt"><span>${fmtDate(s.date)} · ${fmtMoney(s.cost)}</span></button>`).join("")}</div></section>` : ""}`;
+}
+function photoSheet(b, p) {
+  openSheet(`${head(p.caption || p.kind)}<img data-photo="${esc(p.filename)}" alt="" class="big">
+    <form class="form" id="phf"><label class="f">Caption<input id="pc" value="${esc(p.caption)}"></label>
+    <label class="f">Kind<select id="pk">${PHOTO_KINDS.map(k => `<option${k === p.kind ? " selected" : ""}>${k}</option>`).join("")}</select></label>
+    <button class="btn">Save</button><button class="btn danger" type="button" id="pdel">Delete photo</button></form>`, el => {
+    loadPhotos(el);
+    el.querySelector("#phf").onsubmit = e => { e.preventDefault(); p.caption = el.querySelector("#pc").value.trim(); p.kind = el.querySelector("#pk").value; closeSheet(); changed(b) };
+    confirmDelete(el.querySelector("#pdel"), async () => {
+      b.photos = b.photos.filter(x => x.id !== p.id); closeSheet(); changed(b); toast("Photo deleted");
+      try { await api(`storage/v1/object/garage/${S.session.id}/${encodeURIComponent(p.filename)}`, { method: "DELETE", token: await freshToken() }) } catch {}
+    });
+  });
+}
+async function addPhoto(b) {
+  const file = await pickPhoto(); if (!file) return;
+  toast("Uploading…");
+  try { const name = await uploadPhoto(file); b.photos.push({ id: uuid(), filename: name, caption: "", date: iso(new Date()), kind: "General" }); changed(b); toast("Photo added") }
+  catch (err) { toast(err.message || "Upload failed") }
+}
+
+// ---------- Account ----------
+function accountSheet() {
+  if (!cloudReady) { openSheet(`${head("Online sync")}<p class="muted">Online sync isn't set up yet.</p>`); return }
+  if (S.session) {
+    const when = S.lastSync ? `Last synced ${new Date(S.lastSync).toLocaleTimeString(lang, { hour: "2-digit", minute: "2-digit" })}.` : "Not synced yet.";
+    openSheet(`${head("Online sync")}<div class="card form"><div class="t">Signed in with your passkey</div>
+      <p class="small muted" style="margin:0">${when}${lastError ? ` <span style="color:var(--over)">${esc(lastError)}</span>` : ""} Changes upload a moment after you make them, and this page checks for changes from your Mac every 15 seconds while it's open.</p>
+      <button class="btn" data-act="sync" type="button">Sync now</button><button class="btn ghost" data-act="newBike" type="button">Add bike</button>
+      <button class="btn ghost" data-act="addPasskey" type="button">Add another passkey</button><button class="btn ghost" data-act="signout" type="button">Sign out</button></div>`);
+    return;
+  }
+  openSheet(`${head("Sign in")}<div class="card form">
+    <p class="muted" style="margin:0">Garagebook signs in with a passkey. It's saved in iCloud Keychain, so the same one works on your iPhone and Mac. No password.</p>
+    <button class="btn" type="button" id="pkIn">Sign in with passkey</button>
+    <button class="btn ghost" type="button" id="pkNew">Create passkey (first time)</button>
+    <p class="small muted" id="aNote" style="margin:0"></p></div>`, el => {
+    const note = el.querySelector("#aNote"), btns = el.querySelectorAll("button.btn");
+    const go = async (work, label) => {
+      btns.forEach(b => b.disabled = true); note.textContent = label;
+      try { keepSession(await work()); await firstSync(); closeSheet(); toast("Signed in") } catch (err) { note.textContent = passkeyMessage(err) }
+      btns.forEach(b => b.disabled = false);
+    };
+    el.querySelector("#pkIn").onclick = () => go(passkeySignIn, "Waiting for your passkey…");
+    el.querySelector("#pkNew").onclick = () => go(passkeyCreate, "Creating your passkey…");
+  });
+}
+async function addPasskey() {
+  try { await passkeyCreate(); toast("Passkey added") } catch (err) { toast(passkeyMessage(err)) }
+}
+function appLoginScreen() {
+  document.querySelector(".top").hidden = true; $("#tabs").hidden = true;
+  $("#view").innerHTML = `<section style="margin-top:12vh"><div class="card form"><h2>Sign in the Mac app</h2>
+    <p class="muted" style="margin:0">Use your Garagebook passkey from iCloud Keychain. The Mac app takes over when you're done.</p>
+    <button class="btn" type="button" id="macIn">Sign in with passkey</button><p class="small muted" id="macNote" style="margin:0"></p></div></section>`;
+  $("#macIn").onclick = async () => {
+    const note = $("#macNote"); note.textContent = "Waiting for your passkey…";
+    try { handBack(await passkeySignIn()); note.textContent = "Signed in. Going back to the Mac app…" } catch (err) { note.textContent = passkeyMessage(err) }
+  };
+}
+
+function bikeSheet() {
+  openSheet(`${head("Add bike")}<form class="form" id="bk">
+    <label class="f">Name<input id="bn" required placeholder="e.g. Yamaha MT-07"></label>
+    <div class="fields2"><label class="f">Year<input id="by" inputmode="numeric"></label><label class="f">Distance<select id="bu"><option>km</option><option>mi</option></select></label></div>
+    <div class="fields2"><label class="f">Bought on<input id="bd" type="date"></label><label class="f">Price<input id="bp" inputmode="decimal"></label></div>
+    <button class="btn">Add bike</button><p class="small muted" style="margin:0">It starts with a basic schedule. Import the booklet in the Mac app for the full one.</p></form>`, el => {
+    el.querySelector("#bk").onsubmit = e => {
+      e.preventDefault(); const km = el.querySelector("#bu").value === "km", k = v => km ? v : Math.round(v / 1.609344 / 500) * 500;
+      const iv = (task, d, m) => ({ id: uuid(), task, ...(d ? { everyDistance: k(d) } : {}), ...(m ? { everyMonths: m } : {}) });
+      const yr = parseInt(el.querySelector("#by").value), bd = el.querySelector("#bd").value, bp = num(el.querySelector("#bp").value);
+      const b = { id: uuid(), updatedAt: iso(new Date()), name: el.querySelector("#bn").value.trim(), make: "", model: "", vin: "", plate: "", unit: km ? "km" : "mi", story: "",
+        ...(yr ? { year: yr } : {}), ...(bd ? { purchaseDate: iso(fromDateInput(bd)) } : {}), ...(bp != null ? { purchasePrice: bp } : {}),
+        odometer: [], services: [], fuel: [], mods: [], papers: [], wear: [], checklists: [], restoration: [], shopping: [], photos: [],
+        intervals: [iv("Oil and filter", 5000, 12), iv("Chain clean and lube", 1000, 1), iv("Air filter", 10000, 24), iv("Spark plugs", 13000, 24), iv("Brake fluid", null, 24), iv("Coolant", null, 24), iv("Valve clearance check", 24000, null)] };
+      S.file.bikes.push(b); S.bike = b.id; closeSheet(); changed(b); toast("Bike added");
+    };
+  });
+}
+
+// ---------- Events ----------
+$("#bike").addEventListener("change", e => { S.bike = e.target.value; persist(); render() });
+$("#syncChip").addEventListener("click", accountSheet);
+$("#tabs").addEventListener("click", e => { const t = e.target.closest("button")?.dataset.tab; if (t) { S.tab = t; persist(); render(); scrollTo(0, 0) } });
+document.addEventListener("click", e => {
+  const b = bike(), a = e.target.closest("[data-act]")?.dataset.act, go = e.target.closest("[data-go]")?.dataset.go;
+  if (go) { S.tab = go; persist(); render(); scrollTo(0, 0); return }
+  if (a === "account") return accountSheet();
+  if (a === "sync") return sync();
+  if (a === "signout") return signOut();
+  if (a === "newBike") return bikeSheet();
+  if (a === "addPhoto") return addPhoto(b);
+  if (a === "addPasskey") return addPasskey();
+  const ph = e.target.closest("[data-photo-id]")?.dataset.photoId; if (ph) return photoSheet(b, b.photos.find(x => x.id === ph));
+  if (a === "newService") return serviceSheet(b);
+  if (a === "newPaper") return paperSheet(b);
+  const o = e.target.closest("[data-edit-odo]")?.dataset.editOdo; if (o) return odoSheet(b, b.odometer.find(r => r.id === o));
+  const f = e.target.closest("[data-edit-fuel]")?.dataset.editFuel; if (f) return fuelSheet(b, b.fuel.find(r => r.id === f));
+  const s = e.target.closest("[data-edit-service]")?.dataset.editService; if (s) return serviceSheet(b, b.services.find(r => r.id === s));
+  const p = e.target.closest("[data-edit-paper]")?.dataset.editPaper; if (p) return paperSheet(b, b.papers.find(r => r.id === p));
+});
+document.addEventListener("submit", e => {
+  const b = bike();
+  if (e.target.id === "odoForm") { e.preventDefault(); const v = num($("#odoVal").value); if (v == null) return;
+    b.odometer.push({ id: uuid(), date: iso(fromDateInput($("#odoDate").value)), value: v }); changed(b); toast(`Saved ${fmtNum(v)} ${b.unit}`) }
+  if (e.target.id === "fuelForm") { e.preventDefault(); const a = num($("#fOdo").value), v = num($("#fVol").value), t = num($("#fTot").value); if ([a, v, t].includes(null)) return;
+    b.fuel.push({ id: uuid(), date: iso(fromDateInput($("#fDate").value)), odometer: a, volume: v, total: t, full: $("#fFull").checked }); changed(b); toast("Fill saved") }
+});
+if (appLogin) appLoginScreen(); else { render(); sync() }
+</script>
+</body>
+</html>
