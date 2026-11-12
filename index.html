@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-1Nl7iEAJL978Pz95PzhGSNBBk7nUCWUg5TZ5/TCNfEo='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob:; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-bju1bSYpJ0NrB3ecwITbRQ1NqBwprUL3KiBlueOpa3g='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob:; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -309,7 +309,7 @@ function milestones(b, top) {
 const jobsAt = (b, m) => b.intervals.filter(iv => iv.everyDistance > 0 && m / iv.everyDistance >= 1 && Math.abs(m / iv.everyDistance - Math.round(m / iv.everyDistance)) < 0.001).map(iv => iv.task);
 
 // ---------- Merging with the online copy (newest edit of each bike wins; deletes stay deleted) ----------
-function deletedMap(list) { const m = {}; for (let i = 0; i + 1 < (list || []).length; i += 2) m[list[i]] = list[i + 1]; return m }
+function deletedMap(list) { const m = Object.create(null); for (let i = 0; i + 1 < (list || []).length; i += 2) if (/^[0-9A-Fa-f-]{36}$/.test(list[i])) m[list[i]] = list[i + 1]; return m }
 function deletedList(m) { return Object.entries(m).flat() }
 function merge(mine, disk) {
   const del = deletedMap(mine.deleted);
@@ -323,14 +323,21 @@ function merge(mine, disk) {
 // plain, and dates from the future are pulled back to now so they can't win every merge forever.
 const NUMERIC = new Set(["value", "odometer", "volume", "total", "cost", "everyDistance", "everyMonths", "year", "guessedWeekly",
   "purchaseOdometer", "purchasePrice", "price", "budget", "quantity", "limit", "mileage", "km"]);
+const DATES = new Set(["date", "expires", "since", "until", "purchaseDate", "updatedAt", "installed", "doneAt", "due"]);
+const LISTS = ["odometer", "services", "fuel", "mods", "papers", "wear", "checklists", "restoration", "shopping", "photos", "intervals"];
 function scrub(x, depth = 0) {
   if (depth > 12 || !x || typeof x !== "object") return;
+  for (const bad of ["__proto__", "constructor", "prototype"]) if (Object.prototype.hasOwnProperty.call(x, bad)) delete x[bad];
   for (const k of Object.keys(x)) {
     const v = x[k];
-    if (NUMERIC.has(k) && v != null && typeof v !== "number" && typeof v !== "object") { const n = Number(v); if (Number.isFinite(n)) x[k] = n; else delete x[k] }
+    if (NUMERIC.has(k) && !(depth === 0 && LISTS.includes(k))) {   // a bike's "odometer" is its list of readings
+      // A number field holds a number, or a digit string that becomes one; anything else is dropped.
+      const n = typeof v === "number" ? v : typeof v === "string" ? Number(v) : NaN;
+      if (v == null) continue; else if (Number.isFinite(n)) x[k] = n; else delete x[k];
+    }
+    else if (DATES.has(k) && v != null && (typeof v !== "string" || isNaN(new Date(v)))) delete x[k];
     else if (typeof v === "number" && !Number.isFinite(v)) delete x[k];
     else if (v && typeof v === "object") scrub(v, depth + 1);
-    else if (NUMERIC.has(k) && v && typeof v === "object" && !Array.isArray(v)) delete x[k];
   }
 }
 function clean(f) {
@@ -338,6 +345,8 @@ function clean(f) {
   const cap = Date.now() + 300000, seen = new Set();
   f.bikes = f.bikes.filter(b => typeof b.id === "string" && /^[0-9A-Fa-f-]{36}$/.test(b.id) && !seen.has(b.id) && seen.add(b.id));
   for (const b of f.bikes) {
+    // Every list is a list (at most 5000 entries) of objects, so views never meet null or text.
+    for (const k of LISTS) b[k] = Array.isArray(b[k]) ? b[k].filter(x => x && typeof x === "object" && !Array.isArray(x)).slice(-5000) : [];
     scrub(b);
     b.unit = b.unit === "mi" ? "mi" : "km";
     if (!(D(b.updatedAt) <= cap)) b.updatedAt = iso(Math.min(D(b.updatedAt)?.getTime() || 0, cap));
@@ -410,7 +419,8 @@ function render() {
   if (!b) { v.innerHTML = `<section><div class="card"><h2>No bikes</h2><p class="muted">${S.session ? "Your online garage is empty. Sign in on the Mac app with the same account to upload your bikes, or add one here." : "Sign in to see your garage."}</p><div class="btns">${S.session ? '<button class="btn" data-act="newBike">Add bike</button>' : '<button class="btn" data-act="account">Sign in</button>'}</div></div></section>`; return }
   const banner = S.example ? `<section><div class="banner example"><span>This is an <b>example bike</b>. Sign in to see your own garage.</span><button class="linkbtn" data-act="account">Sign in</button></div></section>`
     : lastError ? `<section><div class="banner"><span>Not synced: ${esc(lastError)} Your changes are kept on this phone.</span><button class="linkbtn" data-act="sync">Try again</button></div></section>` : "";
-  v.innerHTML = banner + ({ overview, log, service, papers, photos })[S.tab](b);
+  try { v.innerHTML = banner + ({ overview, log, service, papers, photos })[S.tab](b) }
+  catch { v.innerHTML = banner + '<section><div class="card"><h2>Can\'t show this bike</h2><p class="muted">Some of its data looks damaged. Open it in the Mac app to fix it.</p></div></section>' }
   loadPhotos(v);
 }
 
@@ -550,7 +560,7 @@ function serviceSheet(b, existing) {
     <div class="fields2"><label class="f">Date<input id="sd" type="date" value="${dateInput(s.date)}"></label>
     <label class="f">Odometer (${esc(b.unit)})<input id="so" inputmode="decimal" value="${esc(s.odometer ?? "")}"></label></div>
     ${steps.length ? `<div class="card form" style="background:var(--sunk)"><h3>Quick add</h3>
-      <label class="f">Service<select id="ms">${steps.map(m => `<option value="${m}"${m === near ? " selected" : ""}>${fmtNum(m)} ${esc(b.unit)} service</option>`).join("")}</select></label>
+      <label class="f">Service<select id="ms">${steps.map(m => `<option value="${esc(m)}"${m === near ? " selected" : ""}>${fmtNum(m)} ${esc(b.unit)} service</option>`).join("")}</select></label>
       ${dueByDate.length ? `<label class="check"><input type="checkbox" id="dj"> Also jobs due by date (${dueByDate.length})</label>` : ""}
       <button class="btn ghost" type="button" id="tick"></button>
       <p class="small muted" style="margin:0">Ticks every job due at this mileage. Untick anything you're skipping below.</p></div>` : ""}
@@ -646,32 +656,51 @@ async function api(path, { method = "GET", body, token, prefer, raw, type } = {}
   const r = await fetch(`${SUPABASE_URL}/${path}`, { method, headers, body: raw ?? (body ? JSON.stringify(body) : undefined) });
   if (r.ok && method === "GET" && path.startsWith("storage/")) return r.blob();
   const text = await r.text(); let json = null; try { json = text ? JSON.parse(text) : null } catch {}
-  if (!r.ok) throw new Error(json?.error_description || json?.msg || json?.message || (typeof json?.error === "string" ? json.error : null) || `The server answered ${r.status}.`);
+  if (!r.ok) throw Object.assign(new Error(json?.error_description || json?.msg || json?.message || (typeof json?.error === "string" ? json.error : null) || `The server answered ${r.status}.`), { status: r.status });
   return json;
 }
 function keepSession(j) {
   if (!j?.access_token || !/^[0-9a-f-]{36}$/i.test(j?.user?.id || "")) throw new Error("Sign-in didn't return a session.");
   S.session = { access: j.access_token, refresh: j.refresh_token, expires: Date.now() + (j.expires_in || 3600) * 1000, id: j.user.id };
 }
-function signOut() { S.session = null; S.file = exampleFile(); S.example = true; S.dirty = false; S.lastSync = null; persist(); closeSheet(); render() }
+// Signing out also ends the session on the server, so a copied token stops working.
+// "everywhere" ends every session of the account: every phone, Mac and browser.
+async function signOut(everywhere = false) {
+  const s = S.session;
+  if (s) { try { await api(`auth/v1/logout?scope=${everywhere ? "global" : "local"}`, { method: "POST", token: await freshToken() }) } catch {} }
+  S.session = null; S.file = exampleFile(); S.example = true; S.dirty = false; S.lastSync = null; lastError = null;
+  for (const u of Object.values(photoURLs)) URL.revokeObjectURL(u);
+  for (const k of Object.keys(photoURLs)) delete photoURLs[k];
+  persist(); closeSheet(); render(); if (everywhere) toast("Signed out on every device");
+}
+let refreshing = null;
 async function freshToken() {
+  // Another tab may already have refreshed: use its newer token instead of the old one.
+  const stored = loadState()?.session;
+  if (S.session && stored && stored.id === S.session.id && stored.expires > S.session.expires) S.session = stored;
   const s = S.session; if (!s) return null;
   if (s.expires - 60000 > Date.now()) return s.access;
-  try { keepSession(await api("auth/v1/token?grant_type=refresh_token", { method: "POST", body: { refresh_token: s.refresh } })); persist(); return S.session.access }
-  catch { S.session = null; persist(); throw new Error("Signed out. Sign in with your passkey again to keep syncing.") }
+  return refreshing ??= (async () => {
+    try { keepSession(await api("auth/v1/token?grant_type=refresh_token", { method: "POST", body: { refresh_token: s.refresh } })); persist(); return S.session.access }
+    catch (err) {
+      // Only a refused token signs out; being offline just tries again later.
+      if (err.status === 400 || err.status === 401 || err.status === 403) { S.session = null; persist(); throw new Error("Signed out. Sign in with your passkey again to keep syncing.") }
+      throw err;
+    } finally { refreshing = null }
+  })();
 }
 
 // ---------- Passkeys (saved in iCloud Keychain, so the same one works on iPhone and Mac) ----------
 const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 const unb64u = s => { s = s.replace(/-/g, "+").replace(/_/g, "/"); s += "=".repeat((4 - s.length % 4) % 4); return Uint8Array.from(atob(s), c => c.charCodeAt(0)) };
 const passkeyFn = (route, body, token) => api(`functions/v1/passkey/${route}`, { method: "POST", body, token });
-async function passkeySignIn() {
+async function passkeySignIn(codeChallenge) {
   const { challengeId, options: o } = await passkeyFn("login-options", {});
   const cred = await navigator.credentials.get({ publicKey: { challenge: unb64u(o.challenge), rpId: o.rpId, timeout: o.timeout, userVerification: o.userVerification,
     allowCredentials: (o.allowCredentials || []).map(c => ({ ...c, id: unb64u(c.id) })) } });
   if (!cred) throw new Error("No passkey was chosen.");
   const r = cred.response;
-  return passkeyFn("login-verify", { challengeId, response: { id: cred.id, rawId: b64u(cred.rawId), type: cred.type, authenticatorAttachment: cred.authenticatorAttachment ?? undefined,
+  return passkeyFn("login-verify", { challengeId, ...(codeChallenge ? { codeChallenge } : {}), response: { id: cred.id, rawId: b64u(cred.rawId), type: cred.type, authenticatorAttachment: cred.authenticatorAttachment ?? undefined,
     clientExtensionResults: cred.getClientExtensionResults?.() ?? {},
     response: { clientDataJSON: b64u(r.clientDataJSON), authenticatorData: b64u(r.authenticatorData), signature: b64u(r.signature), userHandle: r.userHandle ? b64u(r.userHandle) : undefined } } });
 }
@@ -691,10 +720,17 @@ async function passkeyCreate() {
 const passkeyMessage = err => err?.name === "NotAllowedError" ? "Cancelled, or no passkey for Garagebook on this device." : err?.message || "That didn't work.";
 
 // The Mac app opens this page to sign in: ?app=mac&state=… → after the passkey, hand the session back to the app.
-const appLogin = (() => { const q = new URLSearchParams(location.search); return q.get("app") === "mac" && /^[0-9A-Fa-f-]{36}$/.test(q.get("state") || "") ? q.get("state") : null })();
+// The app sends a hash of a secret only it knows (cc). The server hands back a one-time code tied to
+// that hash, so the sign-in itself never travels in the garagebook:// link: a code caught by another
+// app is useless without the Mac's secret.
+const appLogin = (() => {
+  const q = new URLSearchParams(location.search);
+  return q.get("app") === "mac" && /^[0-9A-Fa-f-]{36}$/.test(q.get("state") || "") && /^[A-Za-z0-9_-]{43}$/.test(q.get("cc") || "")
+    ? { state: q.get("state"), cc: q.get("cc") } : null;
+})();
 function handBack(j) {
-  const q = new URLSearchParams({ state: appLogin, access: j.access_token, refresh: j.refresh_token, expires_in: String(j.expires_in || 3600), id: j.user.id });
-  location.href = `garagebook://auth?${q}`;
+  if (typeof j?.code !== "string") throw new Error("The server didn't return a sign-in code.");
+  location.href = `garagebook://auth?${new URLSearchParams({ state: appLogin.state, code: j.code })}`;
 }
 
 // The example bike never goes online: the first sync starts from what's stored online.
@@ -716,6 +752,7 @@ async function sync() {
   } catch (err) { lastError = err.message || "Couldn't reach the server." }
   syncing = false; persist(); render();
 }
+addEventListener("storage", e => { if (e.key === KEY) { const n = loadState(); if (n?.file) { n.file = clean(n.file) || S.file; S = { ...S, ...n }; render() } } });
 function syncSoon() { clearTimeout(syncTimer); syncTimer = setTimeout(sync, 1200) }
 setInterval(() => { if (document.visibilityState === "visible") sync() }, 15000);
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") sync() });
@@ -793,7 +830,9 @@ function accountSheet() {
     openSheet(`${head("Online sync")}<div class="card form"><div class="t">Signed in with your passkey</div>
       <p class="small muted" style="margin:0">${when}${lastError ? ` <span style="color:var(--over)">${esc(lastError)}</span>` : ""} Changes upload a moment after you make them, and this page checks for changes from your Mac every 15 seconds while it's open.</p>
       <button class="btn" data-act="sync" type="button">Sync now</button><button class="btn ghost" data-act="newBike" type="button">Add bike</button>
-      <button class="btn ghost" data-act="addPasskey" type="button">Add another passkey</button><button class="btn ghost" data-act="signout" type="button">Sign out</button></div>`);
+      <button class="btn ghost" data-act="addPasskey" type="button">Add another passkey</button><button class="btn ghost" data-act="signout" type="button">Sign out</button>
+      <button class="btn danger" data-act="signoutAll" type="button">Sign out on every device</button>
+      <p class="small muted" style="margin:0">Lost a phone or laptop? "Sign out on every device" ends Garagebook's sign-in everywhere, including the Mac app. Sign in again with your passkey afterwards.</p></div>`);
     return;
   }
   openSheet(`${head("Sign in")}<div class="card form">
@@ -817,11 +856,11 @@ async function addPasskey() {
 function appLoginScreen() {
   document.querySelector(".top").hidden = true; $("#tabs").hidden = true;
   $("#view").innerHTML = `<section style="margin-top:12vh"><div class="card form"><h2>Sign in the Mac app</h2>
-    <p class="muted" style="margin:0">Use your Garagebook passkey from iCloud Keychain. The Mac app takes over when you're done.</p>
+    <p class="muted" style="margin:0">This gives the Garagebook app on this Mac access to your online garage. Only continue if you just pressed <b>Sign in with passkey</b> in Garagebook on your Mac.</p>
     <button class="btn" type="button" id="macIn">Sign in with passkey</button><p class="small muted" id="macNote" style="margin:0"></p></div></section>`;
   $("#macIn").onclick = async () => {
     const note = $("#macNote"); note.textContent = "Waiting for your passkey…";
-    try { handBack(await passkeySignIn()); note.textContent = "Signed in. Going back to the Mac app…" } catch (err) { note.textContent = passkeyMessage(err) }
+    try { handBack(await passkeySignIn(appLogin.cc)); note.textContent = "Signed in. Going back to the Mac app…" } catch (err) { note.textContent = passkeyMessage(err) }
   };
 }
 
@@ -854,6 +893,7 @@ document.addEventListener("click", e => {
   if (a === "account") return accountSheet();
   if (a === "sync") return sync();
   if (a === "signout") return signOut();
+  if (a === "signoutAll") { if (confirm("Sign out of Garagebook on every device, including the Mac app?")) return signOut(true); return }
   if (a === "newBike") return bikeSheet();
   if (a === "addPhoto") return addPhoto(b);
   if (a === "addPasskey") return addPasskey();
