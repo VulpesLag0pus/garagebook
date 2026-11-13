@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-QkarSpV7s19OyPHMmWb1uRcGriX8R1CLnnS+ElIdB0w='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob:; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-nZfEZYmpf/PMCcprqKCwzXXK/oooOrA8c6DNoufdZwU='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob:; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -410,14 +410,51 @@ function iconFor(item) {
 }
 
 // ---------- Rendering ----------
+// What you type in the Log forms is kept as a draft (per bike, on this phone) until you save it, so a
+// redraw, switching to another app, or the iPhone closing the page in the background never loses it.
+const DRAFTS = "garagebook.drafts.v1", DRAFT_FORMS = ["odoForm", "fuelForm"];
+const loadDrafts = () => { try { return JSON.parse(localStorage.getItem(DRAFTS) || "{}") || {} } catch { return {} } };
+const saveDrafts = d => { try { localStorage.setItem(DRAFTS, JSON.stringify(d)) } catch {} };
+function keepDraft(el) {
+  const form = el.closest("form"); if (!form || !DRAFT_FORMS.includes(form.id) || !el.id || !S.bike) return;
+  const d = loadDrafts(), mine = d[S.bike] ??= {}, f = mine[form.id] ??= {};
+  f[el.id] = el.type === "checkbox" ? el.checked : el.value;
+  saveDrafts(d);
+}
+function restoreDrafts() {
+  const mine = loadDrafts()[S.bike] || {};
+  for (const id of DRAFT_FORMS) for (const [field, v] of Object.entries(mine[id] || {})) {
+    const el = document.getElementById(field);
+    if (!el || el.closest("form")?.id !== id) continue;
+    if (el.type === "checkbox") el.checked = !!v; else el.value = String(v);
+  }
+}
+function clearDraft(formId) { const d = loadDrafts(); if (d[S.bike]) { delete d[S.bike][formId]; saveDrafts(d) } }
+document.addEventListener("input", e => keepDraft(e.target));
+document.addEventListener("change", e => keepDraft(e.target));
+
+// Background syncs only redraw the page when the garage really changed, and never while you're typing
+// in it: then they wait until you leave the field.
+let redrawWaiting = false;
+const typing = () => { const a = document.activeElement; return !!a && $("#view").contains(a) && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName) };
+function renderQuietly() { if (typing()) { redrawWaiting = true; renderChip() } else render() }
+document.addEventListener("focusout", () => setTimeout(() => { if (redrawWaiting && !typing()) { redrawWaiting = false; render() } }, 0));
+
 function render() {
+  redrawWaiting = false;
   const b = bike();
   S.bike = b?.id ?? null;
   $("#bike").innerHTML = bikes().map(x => `<option value="${esc(x.id)}"${x.id === S.bike ? " selected" : ""}>${esc(x.name)}</option>`).join("");
+  renderView(b);
+}
+function renderChip() {
   const chip = $("#syncChip"), text = $("#syncText");
   chip.classList.toggle("dirty", !!S.dirty);
   chip.querySelector(".dot").style.background = !S.session ? "var(--muted)" : lastError ? "var(--over)" : S.dirty || syncing ? "var(--soon)" : "var(--ok)";
   text.textContent = !S.session ? "Sign in" : syncing ? "Syncing…" : lastError ? "Not synced" : S.dirty ? "Waiting to sync" : "Synced";
+}
+function renderView(b) {
+  renderChip();
   document.querySelectorAll("#tabs button").forEach(t => t.setAttribute("aria-current", t.dataset.tab === S.tab ? "page" : "false"));
   const v = $("#view");
   if (!b) { v.innerHTML = `<section><div class="card"><h2>No bikes</h2><p class="muted">${S.session ? "Your online garage is empty. Sign in on the Mac app with the same account to upload your bikes, or add one here." : "Sign in to see your garage."}</p><div class="btns">${S.session ? '<button class="btn" data-act="newBike">Add bike</button>' : '<button class="btn" data-act="account">Sign in</button>'}</div></div></section>`; return }
@@ -426,6 +463,7 @@ function render() {
   try { v.innerHTML = banner + ({ overview, log, service, papers, photos })[S.tab](b) }
   catch { v.innerHTML = banner + '<section><div class="card"><h2>Can\'t show this bike</h2><p class="muted">Some of its data looks damaged. Open it in the Mac app to fix it.</p></div></section>' }
   loadPhotos(v);
+  restoreDrafts();
 }
 
 function jobRow(it) {
@@ -742,7 +780,8 @@ async function firstSync() { if (S.example) { S.file = { bikes: [], deleted: [] 
 const summary = f => JSON.stringify({ b: f.bikes.map(b => [b.id, b.updatedAt]).sort(), d: [...(f.deleted || [])].sort() });
 async function sync() {
   if (!cloudReady || !S.session || syncing || appLogin) return;
-  syncing = true; render();
+  syncing = true; renderChip();
+  const before = JSON.stringify(S.file), errorBefore = lastError;
   try {
     const token = await freshToken();
     const rows = await api(`rest/v1/garages?select=data&user_id=eq.${S.session.id}`, { token });
@@ -754,7 +793,8 @@ async function sync() {
     }
     S.dirty = false; S.lastSync = iso(new Date()); lastError = null;
   } catch (err) { lastError = err.message || "Couldn't reach the server." }
-  syncing = false; persist(); render();
+  syncing = false; persist();
+  if (JSON.stringify(S.file) !== before || lastError !== errorBefore) renderQuietly(); else renderChip();
 }
 addEventListener("storage", e => { if (e.key === KEY) { const n = loadState(); if (n?.file) { n.file = clean(n.file) || S.file; S = { ...S, ...n }; render() } } });
 function syncSoon() { clearTimeout(syncTimer); syncTimer = setTimeout(sync, 1200) }
@@ -911,10 +951,10 @@ document.addEventListener("click", e => {
 });
 document.addEventListener("submit", e => {
   const b = bike();
-  if (e.target.id === "odoForm") { e.preventDefault(); const v = num($("#odoVal").value); if (v == null) return;
+  if (e.target.id === "odoForm") { e.preventDefault(); const v = num($("#odoVal").value); if (v == null) return; clearDraft("odoForm");
     b.odometer.push({ id: uuid(), date: iso(fromDateInput($("#odoDate").value)), value: v }); changed(b); toast(`Saved ${fmtNum(v)} ${esc(b.unit)}`) }
   if (e.target.id === "fuelForm") { e.preventDefault(); const a = num($("#fOdo").value), v = num($("#fVol").value), t = num($("#fTot").value); if ([a, v, t].includes(null)) return;
-    b.fuel.push({ id: uuid(), date: iso(fromDateInput($("#fDate").value)), odometer: a, volume: v, total: t, full: $("#fFull").checked }); changed(b); toast("Fill saved") }
+    clearDraft("fuelForm"); b.fuel.push({ id: uuid(), date: iso(fromDateInput($("#fDate").value)), odometer: a, volume: v, total: t, full: $("#fFull").checked }); changed(b); toast("Fill saved") }
 });
 if (appLogin) appLoginScreen(); else { render(); sync() }
 </script>
