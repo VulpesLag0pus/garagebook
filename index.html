@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-EGKM6iuhLXzWE4gC+obyR4aTP62HenT9WG/nv3IQupY='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob:; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-Atx4gvGpbVJrpnmv/tk4/h2fPGI8HnPiUALerX8fFZk='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob:; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -74,6 +74,8 @@ section { display: flex; flex-direction: column; gap: 12px; margin-top: 18px }
 .job .icon { grid-row: span 2; width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; background: var(--sunk); color: var(--muted) }
 .job.due .icon { background: color-mix(in srgb, var(--soon) 18%, transparent); color: var(--soon) }
 .job .icon svg { width: 18px; height: 18px }
+.job button.icon { border: 0; padding: 0; cursor: pointer; font: inherit }
+.job button.icon:active { transform: scale(.92) }
 .job .name { font-weight: 500; min-width: 0 }
 .job .when { font-size: 13px; color: var(--muted); text-align: right; white-space: nowrap }
 .bar { grid-column: 2 / 4; height: 6px; border-radius: 3px; background: var(--sunk); overflow: hidden }
@@ -470,7 +472,9 @@ function jobRow(it) {
   const pct = it.progress == null ? null : Math.max(0, Math.min(1, it.progress));
   const cls = it.status === "overdue" ? "over" : it.status === "soon" ? "soon" : "";
   return `<div class="job${due ? " due" : ""}">
-    <div class="icon" aria-hidden="true">${iconFor(it)}</div>
+    ${due && !it.kind && !String(it.id).startsWith("wear-")
+      ? `<button type="button" class="icon" data-done="${esc(it.id)}" aria-label="${esc(it.title)}: mark as done">${iconFor(it)}</button>`
+      : `<div class="icon" aria-hidden="true">${iconFor(it)}</div>`}
     <div class="name">${esc(it.title)}</div>
     <div class="when">${it.status === "unknown" ? "No record" : esc(it.detail)}</div>
     ${pct != null ? `<div class="bar" role="progressbar" aria-valuenow="${Math.round(pct * 100)}" aria-valuemin="0" aria-valuemax="100" aria-label="${esc(it.title)}"><i class="${cls}" style="width:${(pct * 100).toFixed(1)}%"></i></div>` : `<div class="small muted" style="grid-column:2/4">${it.status === "unknown" ? "Log it once to start the countdown" : ""}</div>`}
@@ -590,6 +594,26 @@ function confirmDelete(btn, run) {
   btn.onclick = () => { if (armed) return run(); armed = true; btn.textContent = "Tap again to delete"; setTimeout(() => { armed = false; btn.textContent = btn.textContent.replace("Tap again to delete", "Delete") }, 3000) };
 }
 
+// Tapping the icon of a due job on the overview: confirm it's done, then log it with date, odometer, cost and shop.
+function doneSheet(b, iv) {
+  if (!iv) return;
+  openSheet(`${head(iv.task)}<div class="form"><p style="margin:0">Has this item been completed?</p>
+    <div class="fields2"><button class="btn" type="button" id="dnYes">Yes</button><button class="btn ghost" type="button" data-close>No</button></div></div>`, el => {
+    el.querySelector("#dnYes").onclick = () => openSheet(`${head(`Log: ${iv.task}`)}<form class="form" id="dnf">
+      <div class="fields2"><label class="f">Date<input id="dnd" type="date" value="${dateInput(new Date())}"></label>
+      <label class="f">Odometer (${esc(b.unit)})<input id="dno" inputmode="decimal" value="${esc(Math.round(mileage(b)))}"></label></div>
+      <div class="fields2"><label class="f">Cost<input id="dnc" inputmode="decimal" placeholder="0"></label><label class="f">Shop<input id="dns" placeholder="e.g. Myself"></label></div>
+      <button class="btn">Add to service log</button></form>`, el2 => {
+      el2.querySelector("#dnf").onsubmit = e => {
+        e.preventDefault();
+        const o = num(el2.querySelector("#dno").value);
+        b.services.push({ id: uuid(), date: iso(fromDateInput(el2.querySelector("#dnd").value) || new Date()), ...(o != null ? { odometer: o } : {}),
+          tasks: [iv.task], shop: el2.querySelector("#dns").value.trim(), cost: num(el2.querySelector("#dnc").value) || 0, notes: "" });
+        closeSheet(); changed(b); toast(`Logged: ${iv.task}`);
+      };
+    });
+  });
+}
 function serviceSheet(b, existing) {
   const s = existing ? JSON.parse(JSON.stringify(existing)) : { id: uuid(), date: iso(new Date()), odometer: Math.round(mileage(b)), tasks: [], shop: "", cost: 0, notes: "" };
   const all = [...new Set([...b.intervals.map(i => i.task), ...s.tasks])];
@@ -940,6 +964,7 @@ document.addEventListener("click", e => {
   if (a === "newBike") return bikeSheet();
   if (a === "addPhoto") return addPhoto(b);
   if (a === "addPasskey") return addPasskey();
+  const dn = e.target.closest("[data-done]")?.dataset.done; if (dn) return doneSheet(b, b.intervals.find(i => i.id === dn));
   const ph = e.target.closest("[data-photo-id]")?.dataset.photoId; if (ph) return photoSheet(b, b.photos.find(x => x.id === ph));
   if (a === "newService") return serviceSheet(b);
   if (a === "newPaper") return paperSheet(b);
