@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-nZfEZYmpf/PMCcprqKCwzXXK/oooOrA8c6DNoufdZwU='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob:; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-EGKM6iuhLXzWE4gC+obyR4aTP62HenT9WG/nv3IQupY='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob:; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -178,8 +178,7 @@ const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : "xxxxxxxx-xxxx-4xx
 const iso = d => new Date(d).toISOString().replace(/\.\d{3}Z$/, "Z");
 const D = s => s ? new Date(s) : null;
 const lang = navigator.language || "en";
-const region = (lang.split("-")[1] || "").toUpperCase();
-const CURRENCY = ({ US: "USD", GB: "GBP", CH: "CHF", SE: "SEK", NO: "NOK", DK: "DKK", PL: "PLN", CA: "CAD", AU: "AUD", JP: "JPY" })[region] || "EUR";
+const CURRENCY = "EUR";   // amounts are entered in euros, whatever the phone's region is
 const fmtMoney = v => new Intl.NumberFormat(lang, { style: "currency", currency: CURRENCY }).format(v || 0);
 const fmtNum = (v, d = 0) => new Intl.NumberFormat(lang, { maximumFractionDigits: d, minimumFractionDigits: d }).format(v || 0);
 // Dates are always day/month/year, like 06/11/2027.
