@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-Atx4gvGpbVJrpnmv/tk4/h2fPGI8HnPiUALerX8fFZk='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob:; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-lAt6dQZMBvwIQm8Vxv8MYP6TPHsrBYOE9r4i+y4zgwU='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob:; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -123,9 +123,22 @@ label.f input[type="date"]::-webkit-calendar-picker-indicator { margin: 0 }
 .task .every { margin-left: auto; font-size: 12px; color: var(--muted); white-space: nowrap }
 
 /* Bottom tabs */
-nav.tabs { position: fixed; inset: auto 0 0; z-index: 6; background: var(--surface); border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(5, 1fr); padding: 6px max(8px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px)) }
+nav.tabs { position: fixed; inset: auto 0 0; z-index: 6; background: var(--surface); border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(6, 1fr); padding: 6px max(8px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px)) }
 nav.tabs button { background: none; border: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; font-weight: 500; color: var(--muted); padding: 6px 0 }
 nav.tabs button svg { width: 22px; height: 22px }
+.rfact, .ritem { padding: 10px 0; border-bottom: 1px solid var(--line) }
+.rfact:last-child, .ritem:last-child { border-bottom: 0 }
+.rtitle { font-weight: 600; margin-bottom: 2px; overflow-wrap: anywhere }
+.rtitle a { color: inherit }
+.rtag { color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 99px; letter-spacing: .03em; vertical-align: middle }
+.rpick { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; text-align: left; background: none; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; margin: 4px 0; color: inherit; font: inherit }
+.rpick.on { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent) }
+.rimgs { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; padding: 10px 0 }
+.rimg { display: flex; flex-direction: column; gap: 3px; color: inherit; text-decoration: none; min-width: 0 }
+.rimg img { width: 100%; height: 110px; object-fit: contain; background: var(--line); border-radius: 8px }
+.rimg span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.btn.small { padding: 6px 12px; font-size: 13px; margin-top: 6px }
+nav.tabs button { min-width: 0; overflow: hidden; text-overflow: ellipsis }
 nav.tabs button[aria-current="page"] { color: var(--accent) }
 
 /* Sheet */
@@ -161,6 +174,7 @@ body { margin: 0 }
   <button type="button" data-tab="service"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg>Service</button>
   <button type="button" data-tab="papers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 13h6M10 17h6"/></svg>Papers</button>
   <button type="button" data-tab="photos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Photos</button>
+  <button type="button" data-tab="schematics"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 12l9 5 9-5"/><path d="M3 16l9 5 9-5"/></svg>Schematics</button>
 </nav>
 
 <script>
@@ -342,7 +356,26 @@ function scrub(x, depth = 0) {
     }
     else if (DATES.has(k) && v != null && (typeof v !== "string" || isNaN(new Date(v)))) delete x[k];
     else if (typeof v === "number" && !Number.isFinite(v)) delete x[k];
+    else if (k === "research" && depth === 0) { if (v && typeof v === "object" && !Array.isArray(v)) scrubLoose(v); else delete x[k] }
     else if (v && typeof v === "object") scrub(v, depth + 1);
+  }
+}
+// Looked-up research is text from the web: it keeps its own field names (a spec "value" is text, not a
+// number), so it only loses dangerous keys, broken numbers and wrong shapes. It is always shown escaped.
+function scrubLoose(x, depth = 0) {
+  if (depth > 8 || !x || typeof x !== "object") return;
+  for (const bad of ["__proto__", "constructor", "prototype"]) if (Object.prototype.hasOwnProperty.call(x, bad)) delete x[bad];
+  if (depth === 0) {
+    for (const k of ["sources", "facts", "items", "images", "excluded", "imported"]) x[k] = Array.isArray(x[k]) ? x[k].slice(0, 500) : [];
+    for (const k of ["facts", "items", "images", "sources", "imported"]) x[k] = x[k].filter(o => o && typeof o === "object" && !Array.isArray(o));
+    x.excluded = x.excluded.filter(e => typeof e === "string");
+    if (!x.picked || typeof x.picked !== "object" || Array.isArray(x.picked)) x.picked = {};
+    for (const [k, v] of Object.entries(x.picked)) if (typeof v !== "string") delete x.picked[k];
+  }
+  for (const k of Object.keys(x)) {
+    const v = x[k];
+    if (typeof v === "number" && !Number.isFinite(v)) delete x[k];
+    else if (v && typeof v === "object") scrubLoose(v, depth + 1);
   }
 }
 function clean(f) {
@@ -461,7 +494,7 @@ function renderView(b) {
   if (!b) { v.innerHTML = `<section><div class="card"><h2>No bikes</h2><p class="muted">${S.session ? "Your online garage is empty. Sign in on the Mac app with the same account to upload your bikes, or add one here." : "Sign in to see your garage."}</p><div class="btns">${S.session ? '<button class="btn" data-act="newBike">Add bike</button>' : '<button class="btn" data-act="account">Sign in</button>'}</div></div></section>`; return }
   const banner = S.example ? `<section><div class="banner example"><span>This is an <b>example bike</b>. Sign in to see your own garage.</span><button class="linkbtn" data-act="account">Sign in</button></div></section>`
     : lastError ? `<section><div class="banner"><span>Not synced: ${esc(lastError)} Your changes are kept on this phone.</span><button class="linkbtn" data-act="sync">Try again</button></div></section>` : "";
-  try { v.innerHTML = banner + ({ overview, log, service, papers, photos })[S.tab](b) }
+  try { v.innerHTML = banner + (({ overview, log, service, papers, photos, schematics })[S.tab] ?? overview)(b) }
   catch { v.innerHTML = banner + '<section><div class="card"><h2>Can\'t show this bike</h2><p class="muted">Some of its data looks damaged. Open it in the Mac app to fix it.</p></div></section>' }
   loadPhotos(v);
   restoreDrafts();
@@ -704,10 +737,222 @@ function paperSheet(b, existing) {
   });
 }
 
+// ---------- Schematics: everything the "lookup" server function found about the bike ----------
+// Sorting happens on the server with keyword lists; searching happens here with fuzzy word matching,
+// synonyms and rare-word weighting. No AI model is involved.
+const R_SECTIONS = [["overview", "Specs"], ["engine", "Engine"], ["chassis", "Chassis, brakes, tyres"], ["dimensions", "Dimensions and weights"],
+  ["electrics", "Electrics"], ["schematics", "Schematics and images"], ["mods", "Mods and upgrades"], ["issues", "Known problems"], ["recalls", "Recalls"],
+  ["manuals", "Manuals"], ["history", "History and generations"], ["links", "Links"]];
+const rTitle = id => (R_SECTIONS.find(s => s[0] === id) || [id, id])[1];
+const SYN = (() => {
+  const groups = [["tyre", "tire", "tyres", "tires", "wheel"], ["oil", "lubrication", "sump"], ["weight", "mass", "kg", "heavy"], ["power", "hp", "kw", "horsepower", "bhp"],
+    ["torque", "nm"], ["tank", "fuel", "petrol", "gas"], ["brake", "brakes", "disc", "caliper", "abs"], ["plug", "spark"], ["chain", "sprocket", "drive"], ["speed", "fast", "kmh"],
+    ["schematic", "schematics", "diagram", "exploded", "drawing", "wiring", "fiche"], ["mod", "mods", "upgrade", "upgrades", "tuning", "accessory", "accessories"],
+    ["problem", "problems", "issue", "issues", "fault", "faults", "failure"], ["light", "lights", "lamp", "headlight", "indicator", "led"], ["battery", "charging", "stator", "regulator"],
+    ["fuse", "fuses"], ["seat", "height"], ["manual", "manuals", "handbook"], ["recall", "recalls", "terugroep"], ["engine", "motor"], ["suspension", "fork", "shock"],
+    ["exhaust", "pipe", "muffler", "silencer"], ["cc", "displacement", "capacity"], ["gear", "gears", "gearbox", "transmission"]];
+  const m = {}; for (const g of groups) for (const w of g) (m[w] ??= new Set(), g.forEach(x => x !== w && m[w].add(x))); return m;
+})();
+const R_STOP = new Set(["the", "a", "an", "of", "for", "my", "what", "is", "how", "much", "and", "on", "in", "to", "does", "do", "it", "bike", "which"]);
+const rTokens = s => String(s ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").split(/[^a-z0-9.]+/).map(w => w.replace(/^\.+|\.+$/g, "")).filter(Boolean);
+function editDistance(a, b, limit) {
+  if (!a.length || !b.length) return Math.max(a.length, b.length);
+  if (Math.abs(a.length - b.length) > limit) return limit + 1;
+  // Optimal string alignment: a swap of two neighbouring letters ("widht") counts as one edit.
+  let prev2 = null, prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i]; let best = i;
+    for (let j = 1; j <= b.length; j++) {
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      if (prev2 && i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) cur[j] = Math.min(cur[j], prev2[j - 2] + 1);
+      best = Math.min(best, cur[j]);
+    }
+    if (best > limit) return limit + 1;
+    prev2 = prev; prev = cur;
+  }
+  return prev[b.length];
+}
+function wordMatch(q, w) {
+  if (q === w) return 1;
+  if (q.length >= 2 && w.startsWith(q)) return 0.8;
+  if (SYN[q]?.has(w)) return 0.7;
+  if (q.length >= 4 && !/^\d+$/.test(q)) { const l = q.length >= 8 ? 2 : 1; if (editDistance(q, w, l) <= l) return 0.6 }
+  return 0;
+}
+function smartSearch(query, docs, limit = 60) {
+  const terms = rTokens(query).filter(t => !R_STOP.has(t));
+  if (!terms.length) return [];
+  const prep = docs.map(d => [d, rTokens(d.title), rTokens(d.body), rTokens(rTitle(d.section))]);
+  const df = {}; for (const [, t, b] of prep) for (const w of new Set([...t, ...b])) df[w] = (df[w] || 0) + 1;
+  const n = Math.max(docs.length, 1), hits = [];
+  for (const [d, t, b, s] of prep) {
+    let total = 0, matched = 0;
+    for (const q of terms) {
+      let best = 0;
+      for (const [words, weight] of [[t, 3], [s, 1.5], [b, 1]]) for (const w of words) { const m = wordMatch(q, w); if (m) best = Math.max(best, m * weight * Math.log(1 + n / (df[w] || 1))) }
+      if (best) { matched++; total += best }
+    }
+    if (!matched) continue;
+    const full = matched === terms.length;
+    hits.push({ doc: d, full, score: total * (full ? 1 : matched / terms.length * 0.5) });
+  }
+  const anyFull = hits.some(h => h.full);
+  return hits.filter(h => !anyFull || h.full).sort((a, b) => b.score - a.score).slice(0, limit);
+}
+const factValues = f => Array.isArray(f.values) && f.values.length ? f.values : [{ value: f.value, sources: [{ source: f.source, url: f.url }] }];
+const factKey = f => String(f.label || "").toLowerCase();
+const shownValue = (r, f) => (r.picked && typeof r.picked[factKey(f)] === "string") ? r.picked[factKey(f)] : f.value;
+const safeHref = u => { try { const x = new URL(u); return /^https?:$/.test(x.protocol) ? x.href : null } catch { return null } };
+let rQuery = "", rOnly = "all", rBusy = false, rMsg = "";
+
+function researchDocs(r) {
+  return [
+    ...(r.facts || []).map((f, i) => ({ id: "f" + i, title: f.label, body: factValues(f).map(v => v.value).join(" ") + " " + f.source, section: f.section, html: () => factHtml(r, f, i, true) })),
+    ...(r.items || []).map((it, i) => ({ id: "i" + i, title: it.title, body: [it.text, it.group, it.source].filter(Boolean).join(" "), section: it.section, html: () => itemHtml(it, i, true) })),
+    ...(r.images || []).map((im, i) => ({ id: "p" + i, title: im.title, body: `${im.kind} image picture photo ${im.license}`, section: "schematics", image: im })),
+  ];
+}
+function ownDocs(b) {
+  const out = [], add = (title, body, place) => out.push({ title, body, section: place, place });
+  for (const s of b.services) add((s.tasks || []).join(", ") || "Service", `${s.shop || ""} ${s.notes || ""} ${fmtDate(s.date)}`, "Service log");
+  for (const m of b.mods) add(m.title || "Mod", `${m.category || ""} ${m.brand || ""} ${m.partNumber || ""} ${m.notes || ""}`, "Mods and upgrades");
+  for (const p of b.papers) add(p.kind || "Paper", `${p.provider || ""} ${p.number || ""} ${p.notes || ""}`, "Papers");
+  for (const s of b.shopping) add(s.name || "Part", `${s.partNumber || ""} ${s.store || ""}`, "Budget and parts list");
+  for (const c of b.checklists) for (const i of (c.items || [])) add(i.text || "", c.title || "", "Checklist");
+  for (const r of b.restoration) add(r.title || "", `${r.phase || ""} ${r.notes || ""}`, "Restoration");
+  for (const i of b.intervals) add(i.task || "", "interval schedule service", "Service schedule");
+  for (const p of b.photos) if (p.caption) add(p.caption, p.kind || "", "Photos");
+  if (b.story) add("Notes", b.story, "Bike notes");
+  return out;
+}
+
+function factHtml(r, f, i, showSection) {
+  const vals = factValues(f), shown = shownValue(r, f);
+  const head = `<div class="row" style="align-items:baseline"><span class="muted">${esc(f.label)}</span><span style="text-align:right">${esc(shown)}</span></div>`;
+  if (vals.length < 2) return `<div class="rfact">${head}<div class="small muted">${showSection ? esc(rTitle(f.section)) + " · " : ""}${esc(f.source)}</div></div>`;
+  return `<div class="rfact">${head}<div class="small" style="color:var(--soon);margin:4px 0">Sources disagree. Tap the one you trust:</div>
+    ${vals.map((v, j) => `<button type="button" class="rpick${shown === v.value ? " on" : ""}" data-pick="${i}" data-val="${j}"><b>${esc(v.value)}</b><span class="small muted">${esc((v.sources || []).map(s => s.source).join(", "))}</span></button>`).join("")}
+    ${r.picked?.[factKey(f)] != null ? '<div class="small muted">Your pick is saved. Tap it again to go back to the most common value.</div>' : ""}</div>`;
+}
+function itemHtml(it, i, showSection) {
+  const href = safeHref(it.url);
+  const meta = [showSection ? rTitle(it.section) : null, it.group, it.source, it.date, it.lang === "nl" ? "in Dutch" : null].filter(Boolean).join(" · ");
+  return `<div class="ritem">
+    <div class="rtitle">${it.open ? '<span class="rtag" style="background:var(--over)">OPEN</span> ' : ""}${it.yours ? "★ " : ""}${href ? `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(it.title)}</a>` : esc(it.title)}</div>
+    ${it.text ? `<div class="small">${esc(it.text)}</div>` : ""}
+    <div class="small muted">${esc(meta)}</div>
+    ${it.section === "mods" ? `<button type="button" class="btn ghost small" data-addmod="${i}"${bike().mods.some(m => (m.title || "").toLowerCase() === String(it.title).toLowerCase()) ? " disabled>In my Mods" : ">Add to my Mods"}</button>` : ""}
+  </div>`;
+}
+function imagesHtml(list) {
+  return `<div class="rimgs">${list.map(im => { const href = safeHref(im.url), src = safeHref(im.thumb); return href && src ? `<a class="rimg" href="${esc(href)}" target="_blank" rel="noopener noreferrer"><img src="${esc(src)}" alt="${esc(im.title)}" loading="lazy"><span class="small">${esc(im.title)}</span><span class="small muted">${im.kind === "general" ? "General diagram · " : im.kind === "schematic" ? "Technical · " : ""}${esc(im.license)} · ${esc(im.author)}</span></a>` : "" }).join("")}</div>`;
+}
+const KIND = { open: ["OPEN DATA", "var(--ok)"], scraped: ["SCRAPED", "var(--soon)"], "built-in": ["BUILT-IN", "var(--accent)"], links: ["LINKS ONLY", "var(--muted)"] };
+const STATUS = { ok: "Worked", empty: "Nothing found", blocked: "Blocked", error: "Failed", off: "Off" };
+
+function schematicsResults(b) {
+  const r = b.research;
+  const direct = smartSearch(rQuery, researchDocs(r)), own = smartSearch(rQuery, ownDocs(b), 25);
+  const imgs = direct.filter(h => h.doc.image).map(h => h.doc.image);
+  return `<section><h2>Direct results (${direct.length})</h2><div class="card">${direct.filter(h => !h.doc.image).map(h => h.doc.html()).join("") || '<p class="muted">Nothing found in the looked-up data.</p>'}${imgs.length ? imagesHtml(imgs) : ""}</div></section>
+    <section><h2>In your data (${own.length})</h2><div class="card">${own.map(h => `<div class="ritem"><div class="rtitle">${esc(h.doc.title || "(untitled)")}</div><div class="small muted">${esc(h.doc.place)}${h.doc.body.trim() ? " · " + esc(h.doc.body.trim().slice(0, 140)) : ""}</div></div>`).join("") || '<p class="muted">No matches in your log, mods, papers or notes.</p>'}</div></section>`;
+}
+function schematicsBrowse(b) {
+  const r = b.research;
+  return R_SECTIONS.filter(([id]) => rOnly === "all" || rOnly === id).map(([id, title]) => {
+    const facts = (r.facts || []).map((f, i) => [f, i]).filter(([f]) => f.section === id);
+    const items = (r.items || []).map((it, i) => [it, i]).filter(([it]) => it.section === id);
+    const imgs = id === "schematics" ? [...(r.images || [])].sort((a, c) => ({ schematic: 0, photo: 1 }[a.kind] ?? 2) - ({ schematic: 0, photo: 1 }[c.kind] ?? 2)) : [];
+    const saved = id === "schematics" ? b.photos.filter(p => String(p.caption || "").startsWith("Schematic")) : [];
+    if (!facts.length && !items.length && !imgs.length && !saved.length) return "";
+    const savedHtml = saved.length ? `<div class="rtitle" style="margin-top:8px">Your saved diagrams</div><div class="gallery">${saved.map(p => `<button type="button" class="ph" data-photo-id="${esc(p.id)}"><img data-photo="${esc(p.filename)}" alt="${esc(p.caption)}"><span>${esc(String(p.caption).replace(/^Schematic: /, ""))}</span></button>`).join("")}</div>
+      <p class="small muted">Saved from the browser in the Mac app (“Save to my Photos”).</p>` : "";
+    return `<section><h2>${esc(title)}</h2><div class="card">${facts.map(([f, i]) => factHtml(r, f, i)).join("")}${savedHtml}${imgs.length ? imagesHtml(imgs) : ""}${items.map(([it, i]) => itemHtml(it, i)).join("")}</div></section>`;
+  }).join("");
+}
+function schematics(b) {
+  const r = b.research, name = [b.year, b.make, b.model].filter(Boolean).join(" ");
+  const can = !!(String(b.make || "").trim() && String(b.model || "").trim());
+  const busy = rBusy ? '<p class="small muted">Looking up… this takes 5–20 seconds.</p>' : "", msg = rMsg ? `<p class="small" style="color:var(--over)">${esc(rMsg)}</p>` : "";
+  if (!r || !Array.isArray(r.sources) || !r.sources.length) {
+    return `<section><div class="card"><h2>Schematics</h2>
+      <p class="muted">Looks up ${esc(name || "this bike")} on Wikipedia, Wikimedia Commons, the RDW and US recall databases, spec sites and the web, and sorts it into specs, schematics, mods, known problems, recalls and manuals. Every line says where it came from.</p>
+      ${!can ? '<p class="small" style="color:var(--soon)">Fill in the make and model in the Mac app first.</p>' : ""}
+      ${b.plate ? '<p class="small muted">Your plate is sent to the RDW to get the official data and open recalls for your exact bike.</p>' : ""}
+      ${S.session ? `<div class="btns"><button class="btn" data-act="lookup"${!can || rBusy ? " disabled" : ""}>Look up ${esc(name)}</button></div>` : '<div class="btns"><button class="btn" data-act="account">Sign in to look up</button></div>'}
+      ${busy}${msg}</div></section>`;
+  }
+  const when = D(r.fetchedAt), disagree = (r.facts || []).filter(f => factValues(f).length > 1).length;
+  return `<section><div class="card">
+      <div class="row" style="align-items:flex-start"><div><b>${esc(r.article ? `Matched “${r.article}”` : name)}</b><div class="small muted">Looked up ${when && !isNaN(when) ? fmtDate(r.fetchedAt) : "earlier"} · ${(r.facts || []).length} specs · ${(r.images || []).length} images · ${(r.items || []).length} links and notes</div>
+        ${disagree ? `<div class="small" style="color:var(--soon)">${disagree} where sources disagree</div>` : ""}</div>
+        <button class="btn ghost small" data-act="lookup"${rBusy || !S.session ? " disabled" : ""}>Refresh</button></div>
+      <input id="rq" type="search" placeholder="Search specs, parts, problems, your log…" value="${esc(rQuery)}" autocomplete="off" style="margin-top:10px;width:100%">
+      <select id="ronly" aria-label="Show section" style="margin-top:8px;width:100%"><option value="all">All sections</option>${R_SECTIONS.map(([id, t]) => `<option value="${id}"${rOnly === id ? " selected" : ""}>${esc(t)}</option>`).join("")}</select>
+      ${busy}${msg}</div></section>
+    <div id="rresults">${rQuery.trim() ? schematicsResults(b) : schematicsBrowse(b)}</div>
+    <section><h2>Sources</h2><div class="card">${r.sources.map(s => { const k = KIND[s.kind] || [String(s.kind).toUpperCase(), "var(--muted)"], off = (r.excluded || []).includes(s.id); return `<div class="ritem">
+      <label class="row" style="align-items:center;gap:10px"><span><b>${esc(s.name)}</b> <span class="rtag" style="background:${k[1]}">${esc(k[0])}</span></span><input type="checkbox" data-src="${esc(s.id)}"${off ? "" : " checked"} aria-label="Use ${esc(s.name)}"></label>
+      <div class="small" style="color:${s.status === "ok" || s.status === "off" ? "var(--muted)" : "var(--soon)"}">${esc([STATUS[s.status] || s.status, s.note].filter(Boolean).join(": "))}</div>
+      ${s.about ? `<div class="small muted">${esc(s.about)}</div>` : ""}</div>` }).join("")}
+      ${(r.imported || []).map(imp => `<div class="ritem"><b>${esc(imp.source)}</b> <span class="rtag" style="background:#8e44ad">YOUR IMPORT</span>
+        <div class="small muted">${Array.isArray(imp.rows) ? imp.rows.length : 0} lines, imported ${esc(String(imp.date || "").slice(0, 10))} in the Mac app's browser. Remove it there.</div></div>`).join("")}
+      <p class="small muted">Scraped sources read normal web pages. If one breaks or gives wrong data, switch it off; the next Refresh skips it. To import specs from bikez.com or save parts diagrams, use the browser (globe button) in the Mac app's Schematics tab.</p></div></section>`;
+}
+async function lookupBike(b) {
+  if (rBusy) return;
+  rBusy = true; rMsg = ""; render();
+  try {
+    const fresh = await api(`functions/v1/${LOOKUP_FN}`, { method: "POST", token: await freshToken(),
+      body: { make: b.make, model: b.model, year: b.year ?? null, plate: b.plate || "", excluded: b.research?.excluded || [], imported: b.research?.imported || [] } });
+    if (!fresh || !Array.isArray(fresh.sources)) throw new Error("The lookup answered with nothing.");
+    const kept = { excluded: b.research?.excluded || [], picked: b.research?.picked || {}, imported: b.research?.imported || [] };
+    b.research = { ...fresh, ...kept };
+    scrubLoose(b.research);
+    rBusy = false; changed(b); toast("Lookup done");
+  } catch (err) {
+    rBusy = false; rMsg = err.status === 404 ? "The lookup function isn't deployed yet." : err.message; render();
+  }
+}
+document.addEventListener("input", e => {
+  if (e.target.id !== "rq") return;
+  rQuery = e.target.value; const b = bike(), box = $("#rresults");
+  if (box && b?.research) { box.innerHTML = rQuery.trim() ? schematicsResults(b) : schematicsBrowse(b); loadPhotos(box) }
+});
+document.addEventListener("change", e => {
+  const b = bike(); if (!b) return;
+  if (e.target.id === "ronly") { rOnly = e.target.value; render(); return }
+  const src = e.target.dataset?.src; if (src && b.research) {
+    const ex = new Set(b.research.excluded || []); e.target.checked ? ex.delete(src) : ex.add(src);
+    b.research.excluded = [...ex]; changed(b);
+  }
+});
+document.addEventListener("click", e => {
+  const b = bike(); if (!b) return;
+  if (e.target.closest("[data-act]")?.dataset.act === "lookup") return void lookupBike(b);
+  const pk = e.target.closest("[data-pick]");
+  if (pk && b.research) {
+    const f = b.research.facts?.[+pk.dataset.pick], v = f && factValues(f)[+pk.dataset.val]; if (!v) return;
+    if (["__proto__", "constructor", "prototype"].includes(factKey(f))) return;
+    if (!b.research.picked || typeof b.research.picked !== "object" || Array.isArray(b.research.picked)) b.research.picked = {};
+    if (b.research.picked[factKey(f)] === v.value) delete b.research.picked[factKey(f)]; else b.research.picked[factKey(f)] = v.value;
+    changed(b); return;
+  }
+  const am = e.target.closest("[data-addmod]");
+  if (am && b.research) {
+    const it = b.research.items?.[+am.dataset.addmod]; if (!it) return;
+    const cat = { Electrics: "Electronics", Chassis: "Other" }[it.category] || it.category;
+    b.mods.push({ id: uuid(), date: iso(new Date()), title: String(it.title), category: ["Performance", "Comfort", "Protection", "Lighting", "Luggage", "Looks", "Electronics", "Other"].includes(cat) ? cat : "Other",
+      brand: "", partNumber: "", cost: 0, notes: `Planned. Found in Schematics${it.source ? " from " + it.source : ""}.${safeHref(it.url) ? "\n" + safeHref(it.url) : ""}` });
+    changed(b); toast("Added to your Mods");
+  }
+});
+
 // ---------- Online storage (Supabase) ----------
 // Both values are meant to be public; each account can only reach its own garage and photos (row level security).
 const SUPABASE_URL = "https://gnroryugxfcqgwrbhkmn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_96rxQS1XCdb3Lt6sdXYmEQ_PA7htKIX";
+const LOOKUP_FN = "dynamic-handler";   // the name the Schematics lookup function was deployed under
 const cloudReady = !SUPABASE_KEY.startsWith("YOUR-") && !SUPABASE_URL.includes("YOUR-PROJECT");
 let syncing = false, syncTimer = null, lastError = null;
 
