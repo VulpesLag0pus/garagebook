@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-lAt6dQZMBvwIQm8Vxv8MYP6TPHsrBYOE9r4i+y4zgwU='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob:; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-pajWKsunQ3ygFg8yLZjeER5/TbzZU+YPiAAvY35nkb0='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data: https://upload.wikimedia.org https://thumb.wikimedia.org; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -133,6 +133,7 @@ nav.tabs button svg { width: 22px; height: 22px }
 .rtag { color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 99px; letter-spacing: .03em; vertical-align: middle }
 .rpick { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; text-align: left; background: none; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; margin: 4px 0; color: inherit; font: inherit }
 .rpick.on { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent) }
+.rgen { display: block; width: 100%; height: auto; border-radius: 8px; margin: 6px 0; background: #fff }
 .rimgs { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; padding: 10px 0 }
 .rimg { display: flex; flex-direction: column; gap: 3px; color: inherit; text-decoration: none; min-width: 0 }
 .rimg img { width: 100%; height: 110px; object-fit: contain; background: var(--line); border-radius: 8px }
@@ -366,8 +367,8 @@ function scrubLoose(x, depth = 0) {
   if (depth > 8 || !x || typeof x !== "object") return;
   for (const bad of ["__proto__", "constructor", "prototype"]) if (Object.prototype.hasOwnProperty.call(x, bad)) delete x[bad];
   if (depth === 0) {
-    for (const k of ["sources", "facts", "items", "images", "excluded", "imported"]) x[k] = Array.isArray(x[k]) ? x[k].slice(0, 500) : [];
-    for (const k of ["facts", "items", "images", "sources", "imported"]) x[k] = x[k].filter(o => o && typeof o === "object" && !Array.isArray(o));
+    for (const k of ["sources", "facts", "items", "images", "excluded", "imported", "generated"]) x[k] = Array.isArray(x[k]) ? x[k].slice(0, 500) : [];
+    for (const k of ["facts", "items", "images", "sources", "imported", "generated"]) x[k] = x[k].filter(o => o && typeof o === "object" && !Array.isArray(o));
     x.excluded = x.excluded.filter(e => typeof e === "string");
     if (!x.picked || typeof x.picked !== "object" || Array.isArray(x.picked)) x.picked = {};
     for (const [k, v] of Object.entries(x.picked)) if (typeof v !== "string") delete x.picked[k];
@@ -802,6 +803,14 @@ function smartSearch(query, docs, limit = 60) {
 const factValues = f => Array.isArray(f.values) && f.values.length ? f.values : [{ value: f.value, sources: [{ source: f.source, url: f.url }] }];
 const factKey = f => String(f.label || "").toLowerCase();
 const shownValue = (r, f) => (r.picked && typeof r.picked[factKey(f)] === "string") ? r.picked[factKey(f)] : f.value;
+// Technical diagrams only: older lookups also saved photos of bikes, which are never shown.
+const rDiagrams = r => (r.images || []).filter(im => im && im.kind !== "photo");
+// Diagrams Garagebook drew from the specs. Shown as images (an <img> never runs scripts), and only plain drawings are accepted.
+const SVG_BAD = /<script|<foreignObject|\bon[a-z]+\s*=|javascript:|href\s*=\s*"(?!#)|@import|url\((?!#)/i;
+const rGenerated = r => (r.generated || []).filter(d => d && typeof d.svg === "string" && d.svg.startsWith("<svg") && d.svg.length < 200000 && !SVG_BAD.test(d.svg));
+const genHtml = d => `<div class="ritem"><div class="rtitle">${esc(d.title)} <span class="rtag" style="background:#0d9488">GENERATED</span></div>
+  <img class="rgen" alt="${esc(d.title)}" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(d.svg)}">
+  ${Array.isArray(d.basis) && d.basis.length ? `<div class="small muted">Drawn by Garagebook from: ${esc(d.basis.join(", "))}. Uses your picks (as of the last Refresh).</div>` : ""}</div>`;
 const safeHref = u => { try { const x = new URL(u); return /^https?:$/.test(x.protocol) ? x.href : null } catch { return null } };
 let rQuery = "", rOnly = "all", rBusy = false, rMsg = "";
 
@@ -809,7 +818,8 @@ function researchDocs(r) {
   return [
     ...(r.facts || []).map((f, i) => ({ id: "f" + i, title: f.label, body: factValues(f).map(v => v.value).join(" ") + " " + f.source, section: f.section, html: () => factHtml(r, f, i, true) })),
     ...(r.items || []).map((it, i) => ({ id: "i" + i, title: it.title, body: [it.text, it.group, it.source].filter(Boolean).join(" "), section: it.section, html: () => itemHtml(it, i, true) })),
-    ...(r.images || []).map((im, i) => ({ id: "p" + i, title: im.title, body: `${im.kind} image picture photo ${im.license}`, section: "schematics", image: im })),
+    ...rGenerated(r).map((d, i) => ({ id: "g" + i, title: d.title, body: "generated diagram drawing schematic " + (d.basis || []).join(" "), section: "schematics", html: () => genHtml(d) })),
+    ...rDiagrams(r).map((im, i) => ({ id: "p" + i, title: im.title, body: `${im.kind} diagram drawing image ${im.license}`, section: "schematics", image: im })),
   ];
 }
 function ownDocs(b) {
@@ -862,12 +872,13 @@ function schematicsBrowse(b) {
   return R_SECTIONS.filter(([id]) => rOnly === "all" || rOnly === id).map(([id, title]) => {
     const facts = (r.facts || []).map((f, i) => [f, i]).filter(([f]) => f.section === id);
     const items = (r.items || []).map((it, i) => [it, i]).filter(([it]) => it.section === id);
-    const imgs = id === "schematics" ? [...(r.images || [])].sort((a, c) => ({ schematic: 0, photo: 1 }[a.kind] ?? 2) - ({ schematic: 0, photo: 1 }[c.kind] ?? 2)) : [];
+    const imgs = id === "schematics" ? [...rDiagrams(r)].sort((a, c) => ({ schematic: 0, photo: 1 }[a.kind] ?? 2) - ({ schematic: 0, photo: 1 }[c.kind] ?? 2)) : [];
     const saved = id === "schematics" ? b.photos.filter(p => String(p.caption || "").startsWith("Schematic")) : [];
-    if (!facts.length && !items.length && !imgs.length && !saved.length) return "";
+    const gen = id === "schematics" ? rGenerated(r) : [];
+    if (!facts.length && !items.length && !imgs.length && !saved.length && !gen.length) return "";
     const savedHtml = saved.length ? `<div class="rtitle" style="margin-top:8px">Your saved diagrams</div><div class="gallery">${saved.map(p => `<button type="button" class="ph" data-photo-id="${esc(p.id)}"><img data-photo="${esc(p.filename)}" alt="${esc(p.caption)}"><span>${esc(String(p.caption).replace(/^Schematic: /, ""))}</span></button>`).join("")}</div>
       <p class="small muted">Saved from the browser in the Mac app (“Save to my Photos”).</p>` : "";
-    return `<section><h2>${esc(title)}</h2><div class="card">${facts.map(([f, i]) => factHtml(r, f, i)).join("")}${savedHtml}${imgs.length ? imagesHtml(imgs) : ""}${items.map(([it, i]) => itemHtml(it, i)).join("")}</div></section>`;
+    return `<section><h2>${esc(title)}</h2><div class="card">${facts.map(([f, i]) => factHtml(r, f, i)).join("")}${gen.map(genHtml).join("")}${savedHtml}${imgs.length ? imagesHtml(imgs) : ""}${items.map(([it, i]) => itemHtml(it, i)).join("")}</div></section>`;
   }).join("");
 }
 function schematics(b) {
@@ -884,7 +895,7 @@ function schematics(b) {
   }
   const when = D(r.fetchedAt), disagree = (r.facts || []).filter(f => factValues(f).length > 1).length;
   return `<section><div class="card">
-      <div class="row" style="align-items:flex-start"><div><b>${esc(r.article ? `Matched “${r.article}”` : name)}</b><div class="small muted">Looked up ${when && !isNaN(when) ? fmtDate(r.fetchedAt) : "earlier"} · ${(r.facts || []).length} specs · ${(r.images || []).length} images · ${(r.items || []).length} links and notes</div>
+      <div class="row" style="align-items:flex-start"><div><b>${esc(r.article ? `Matched “${r.article}”` : name)}</b><div class="small muted">Looked up ${when && !isNaN(when) ? fmtDate(r.fetchedAt) : "earlier"} · ${(r.facts || []).length} specs · ${rDiagrams(r).length} diagrams · ${(r.items || []).length} links and notes</div>
         ${disagree ? `<div class="small" style="color:var(--soon)">${disagree} where sources disagree</div>` : ""}</div>
         <button class="btn ghost small" data-act="lookup"${rBusy || !S.session ? " disabled" : ""}>Refresh</button></div>
       <input id="rq" type="search" placeholder="Search specs, parts, problems, your log…" value="${esc(rQuery)}" autocomplete="off" style="margin-top:10px;width:100%">
@@ -904,7 +915,7 @@ async function lookupBike(b) {
   rBusy = true; rMsg = ""; render();
   try {
     const fresh = await api(`functions/v1/${LOOKUP_FN}`, { method: "POST", token: await freshToken(),
-      body: { make: b.make, model: b.model, year: b.year ?? null, plate: b.plate || "", excluded: b.research?.excluded || [], imported: b.research?.imported || [] } });
+      body: { make: b.make, model: b.model, year: b.year ?? null, plate: b.plate || "", excluded: b.research?.excluded || [], imported: b.research?.imported || [], picked: b.research?.picked || {} } });
     if (!fresh || !Array.isArray(fresh.sources)) throw new Error("The lookup answered with nothing.");
     const kept = { excluded: b.research?.excluded || [], picked: b.research?.picked || {}, imported: b.research?.imported || [] };
     b.research = { ...fresh, ...kept };
