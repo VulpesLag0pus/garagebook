@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-pajWKsunQ3ygFg8yLZjeER5/TbzZU+YPiAAvY35nkb0='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data: https://upload.wikimedia.org https://thumb.wikimedia.org; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-7NYZZB2vZbR7z7dVbmnazH0RkMo+Gad/pa6zksqaOPg='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data: https://upload.wikimedia.org https://thumb.wikimedia.org; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -802,7 +802,8 @@ function smartSearch(query, docs, limit = 60) {
 }
 const factValues = f => Array.isArray(f.values) && f.values.length ? f.values : [{ value: f.value, sources: [{ source: f.source, url: f.url }] }];
 const factKey = f => String(f.label || "").toLowerCase();
-const shownValue = (r, f) => (r.picked && typeof r.picked[factKey(f)] === "string") ? r.picked[factKey(f)] : f.value;
+// Your pick, while it's still one of the values (a refresh can drop it, e.g. when the owner's manual overrules a website).
+const shownValue = (r, f) => { const p = r.picked && r.picked[factKey(f)]; return typeof p === "string" && factValues(f).some(v => v.value === p) ? p : f.value; };
 // Technical diagrams only: older lookups also saved photos of bikes, which are never shown.
 const rDiagrams = r => (r.images || []).filter(im => im && im.kind !== "photo");
 // Diagrams Garagebook drew from the specs. Shown as images (an <img> never runs scripts), and only plain drawings are accepted.
@@ -838,7 +839,8 @@ function ownDocs(b) {
 
 function factHtml(r, f, i, showSection) {
   const vals = factValues(f), shown = shownValue(r, f);
-  const head = `<div class="row" style="align-items:baseline"><span class="muted">${esc(f.label)}</span><span style="text-align:right">${esc(shown)}</span></div>`;
+  const tag = f.official === true ? ' <span class="rtag" style="background:#16a34a" title="From the official owner\'s manual. Websites that disagree are left out.">MANUAL</span>' : "";
+  const head = `<div class="row" style="align-items:baseline"><span class="muted">${esc(f.label)}</span><span style="text-align:right">${esc(shown)}${tag}</span></div>`;
   if (vals.length < 2) return `<div class="rfact">${head}<div class="small muted">${showSection ? esc(rTitle(f.section)) + " · " : ""}${esc(f.source)}</div></div>`;
   return `<div class="rfact">${head}<div class="small" style="color:var(--soon);margin:4px 0">Sources disagree. Tap the one you trust:</div>
     ${vals.map((v, j) => `<button type="button" class="rpick${shown === v.value ? " on" : ""}" data-pick="${i}" data-val="${j}"><b>${esc(v.value)}</b><span class="small muted">${esc((v.sources || []).map(s => s.source).join(", "))}</span></button>`).join("")}
