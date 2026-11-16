@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-/2pqRkI+puoWJ6iXuL7F4SNdePwNmvwiFJ/kMNwBQ94='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data: https://upload.wikimedia.org https://thumb.wikimedia.org; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co https://opendata.cbs.nl https://ec.europa.eu; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-XFX1k8culGUBuz9bDAd3dJm0TX8XoPj45fd4CJ/yz18='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data: https://upload.wikimedia.org https://thumb.wikimedia.org; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co https://opendata.cbs.nl https://ec.europa.eu; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -611,7 +611,9 @@ const perMonth = b => b.papers.filter(p => (p.billing || "One-off") !== "One-off
 function costs(b) {
   const service = b.services.reduce((s, x) => s + (x.cost || 0), 0), fuel = b.fuel.reduce((s, x) => s + (x.total || 0), 0);
   const mods = (b.mods || []).reduce((s, x) => s + (x.cost || 0), 0), papers = b.papers.reduce((s, p) => s + paid(b, p), 0);
-  const parts = (b.shopping || []).filter(x => x.bought).reduce((s, x) => s + x.price * x.qty, 0);
+  // A bought part that became a mod (the Mac app links them) counts under mods, not twice.
+  const modded = new Set((b.mods || []).map(m => m.fromPart).filter(Boolean));
+  const parts = (b.shopping || []).filter(x => x.bought && !modded.has(x.id)).reduce((s, x) => s + x.price * x.qty, 0);
   const running = service + fuel + mods + papers + parts;
   return { service, fuel, mods, papers, parts, running, total: running + (b.purchasePrice || 0) };
 }
