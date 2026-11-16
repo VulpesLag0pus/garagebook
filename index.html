@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-uNbpUhpeYEyCAyegzUzO0rmaViWv67zJahVhVtTsjsM='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data: https:; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co https://opendata.cbs.nl https://ec.europa.eu; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-gtSlRoCv3SH7zh6vc5BJn01stP3qQT95X0Q0UZZUTNs='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data: https:; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co https://opendata.cbs.nl https://ec.europa.eu; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -101,7 +101,7 @@ section { display: flex; flex-direction: column; gap: 12px; margin-top: 18px }
 /* Lists and forms */
 .rows { display: flex; flex-direction: column }
 [hidden] { display: none !important }
-/* The installed app on a computer: the Mac app's look. A light sidebar with the bike and its pages, wide content. */
+/* On a computer (window 1000 px or wider): the Mac app's look. A light sidebar with the bike and its pages, wide content. */
 .side { display: none }
 body.desk .wrap { max-width: 1240px; display: grid; grid-template-columns: 250px minmax(0, 1fr); column-gap: 32px; padding: 0 28px 40px }
 body.desk .side { grid-row: 1 / span 2; display: flex; flex-direction: column; gap: 2px; position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 18px 0 }
@@ -1198,12 +1198,11 @@ function papers(b) {
   </section>`;
 }
 
-// ---------- The installed app on a computer: the Mac app's look, with all its pages ----------
-// Only when Garagebook is installed (its own window) and the window is at least 1000 px wide. In a browser tab
-// and on phones the page stays as it is: the six tabs at the bottom.
-const deskQuery = matchMedia("(display-mode: standalone) and (min-width: 1000px)");
-// (For testing in a browser tab: sessionStorage["garagebook.desk"] = "1" and reload.)
-const isDesk = () => deskQuery.matches || (() => { try { return sessionStorage.getItem("garagebook.desk") === "1" && innerWidth >= 1000 } catch { return false } })();
+// ---------- On a computer: the Mac app's look, with all its pages ----------
+// Whenever the window is at least 1000 px wide, in a browser tab or installed. Narrower (phones, small windows)
+// the page stays as it is: the six tabs at the bottom.
+const deskQuery = matchMedia("(min-width: 1000px)");
+const isDesk = () => deskQuery.matches;
 deskQuery.addEventListener?.("change", () => { document.body.classList.toggle("desk", isDesk()); if (!appLogin && !linkInvite) render() });
 const DESK_PAGES = [
   ["overview", "Overview", '<path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-6"/>'],
