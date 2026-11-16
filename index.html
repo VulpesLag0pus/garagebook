@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-gtSlRoCv3SH7zh6vc5BJn01stP3qQT95X0Q0UZZUTNs='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data: https:; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co https://opendata.cbs.nl https://ec.europa.eu; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-E3yw7Svr3XY31YrgJ9e9psVaXS1o/LOWYJZbVhWZpYE='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data: https:; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co https://opendata.cbs.nl https://ec.europa.eu; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -111,6 +111,21 @@ body.desk #view { grid-column: 2; max-width: 980px }
 body.desk #tabs { display: none }
 body.desk .bikeart { max-height: 240px; width: auto; max-width: 100%; align-self: center }
 body.desk .hero { max-width: 980px }
+body.desk .dashhead { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap }
+body.desk .dashhead .btns { margin: 0; flex-wrap: nowrap; align-items: center }
+body.desk .dashhead .btns .btn { flex: none; white-space: nowrap }
+.dash { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px }
+.dash .widget { display: flex; flex-direction: column; gap: 8px; min-width: 0 }
+.dash .widget.dark { background: var(--accent); color: var(--accent-fg) }
+.dash .widget.dark .label, .dash .widget.dark .sub, .dash .widget.dark .muted { color: color-mix(in srgb, var(--accent-fg) 72%, transparent) }
+.dash .widget.dark .linkbtn { color: var(--accent-fg) }
+.dash.arranging .widget { outline: 2px dashed var(--line); cursor: grab }
+.dash .wctl { display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding-bottom: 6px }
+.dash .wctl .linkbtn { margin-left: 8px }
+.dash .chart { width: 100%; height: auto }
+.dash .chart .ax { font-size: 13px; fill: var(--muted) }
+.dash textarea { width: 100%; min-height: 90px; resize: vertical }
+#wAdd { min-width: 180px }
 .side .sw { display: flex; flex-direction: column; gap: 2px; background: var(--surface); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px }
 .side .sw select { font-family: var(--display); font-size: 17px; font-weight: 700; border: 0; background: none; padding: 0 }
 .side .it { display: flex; align-items: center; gap: 10px; border: 0; background: none; color: var(--muted); font-weight: 600; font-size: 14px; padding: 8px 12px; border-radius: 999px; text-align: left; min-height: 36px }
@@ -749,6 +764,23 @@ function scrubLoose(x, depth = 0) {
     else if (v && typeof v === "object") scrubLoose(v, depth + 1);
   }
 }
+// Overview widget layouts (see the widgets section): only known widgets and sizes, as the Mac app drops a bike it can't read.
+const WIDGETS = {
+  odometer: ["Odometer", "small"], perWeek: ["Per week", "small"], nextJob: ["Next job", "medium"],
+  upcoming: ["Upcoming maintenance", "large"], logOdometer: ["Log odometer", "medium"], logFuel: ["Log fuel", "medium"],
+  chart: ["Odometer over time", "large"], history: ["History since you bought it", "medium"], services: ["Services", "small"],
+  runningCost: ["Running cost", "small"], economy: ["Economy", "small"], restoration: ["Restoration", "small"],
+  photos: ["Photos", "small"], story: ["The story", "medium"], report: ["History report", "medium"],
+};
+const WIDGET_DEFAULTS = ["odometer", "perWeek", "nextJob", "upcoming", "logOdometer", "logFuel", "chart", "history", "runningCost", "economy", "services", "restoration", "story", "report"];
+const SIZES = ["small", "medium", "large"], SIZE_NAME = { small: "Small", medium: "Wide", large: "Full width" }, SPAN = { small: 1, medium: 2, large: 4 };
+function cleanDashboard(b) {
+  if (b.dashboard == null) return;
+  if (!Array.isArray(b.dashboard)) { delete b.dashboard; return }
+  const seen = new Set();
+  b.dashboard = b.dashboard.filter(c => c && typeof c === "object" && WIDGETS[c.kind] && SIZES.includes(c.size) && typeof c.id === "string" && UUID_RE.test(c.id) && !seen.has(c.kind) && seen.add(c.kind))
+    .map(c => ({ id: c.id, kind: c.kind, size: c.size })).slice(0, 40);
+}
 function clean(f) {
   if (!validFile(f) || f.bikes.length > 500) return null;
   const cap = Date.now() + 300000, seen = new Set();
@@ -758,6 +790,7 @@ function clean(f) {
     for (const k of LISTS) b[k] = Array.isArray(b[k]) ? b[k].filter(x => x && typeof x === "object" && !Array.isArray(x)).slice(-5000) : [];
     scrub(b);
     b.unit = b.unit === "mi" ? "mi" : "km";
+    cleanDashboard(b);
     if (b.fuelRegion !== "NL" && b.fuelRegion !== "none") delete b.fuelRegion;
     for (const f of b.fuel) { if (f.country !== undefined && !(typeof f.country === "string" && COUNTRY_CODE.test(f.country))) delete f.country; const marks = Array.isArray(f.estimated) ? FILL_FIELDS.filter(k => f.estimated.includes(k)) : []; if (marks.length) f.estimated = marks; else delete f.estimated }
     if (!(D(b.updatedAt) <= cap)) b.updatedAt = iso(Math.min(D(b.updatedAt)?.getTime() || 0, cap));
@@ -1113,6 +1146,7 @@ function engineSize(b) {
 }
 
 function overview(b) {
+  if (isDesk()) return deskOverview(b);
   const now = mileage(b), est = now > currentOdo(b) + 0.5, avg = weeklyAverage(b);
   const up = upcoming(b), next = up.find(x => x.status !== "unknown"), c = costs(b), pm = perMonth(b), econ = economy(b);
   const vol = b.unit === "km" ? "L" : "gal";
@@ -1125,6 +1159,7 @@ function overview(b) {
       <svg class="bikeart" viewBox="0 0 2518 1478" role="img" aria-label="Side view of a sport bike"><use href="#bikeArt"/></svg>
       <button class="btn" data-act="newService">Log a service</button>
       <button class="btn ghost" data-go="log">Log odometer or fuel</button>
+      <button class="linkbtn" type="button" data-act="editBike" style="align-self:center">Edit bike</button>
     </div>
     <div class="grid2">
       <div class="card stat dark"><div class="label">${est ? "Odometer, estimated" : "Odometer"}</div><div class="value">${fmtNum(now)} <span style="font-size:14px">${esc(b.unit)}</span></div><div class="sub">${est ? `Last reading ${fmtNum(currentOdo(b))}` : "From your last reading"}</div></div>
@@ -1136,7 +1171,7 @@ function overview(b) {
   <section><h2>Upcoming maintenance</h2><div class="card"><div class="jobs">${up.map(jobRow).join("") || '<p class="muted">No schedule yet. Add intervals in the Mac app.</p>'}</div></div></section>
   <section><h2>Costs</h2>
     <div class="grid2">
-      <div class="card stat"><div class="label">Total cost to own</div><div class="value">${fmtMoney(c.total)}</div><div class="sub">${b.purchasePrice ? `incl. ${fmtMoney(b.purchasePrice)} purchase` : "Add the purchase price on the Mac"}</div></div>
+      <div class="card stat"><div class="label">Total cost to own</div><div class="value">${fmtMoney(c.total)}</div><div class="sub">${b.purchasePrice ? `incl. ${fmtMoney(b.purchasePrice)} purchase` : "Add the purchase price under Edit bike"}</div></div>
       <div class="card stat"><div class="label">Every month</div><div class="value">${fmtMoney(pm)}</div><div class="sub">insurance and papers</div></div>
     </div>
     <div class="card"><div class="rows">
@@ -1230,6 +1265,7 @@ function renderSide() {
     ${row("exports", "Export", '<path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/>')}
     <button type="button" class="it" data-act="account">${svgIcon('<path d="M4 12a8 8 0 0 1 14-5l2-2v6h-6l2-2a5 5 0 1 0 1 5"/>')}<span>${S.session ? "Online sync on" : "Set up online sync"}</span></button>
     ${S.me?.owner ? `<button type="button" class="it" data-act="admin">${svgIcon('<circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M17 11l2 2 3-3"/>')}<span>Admin control</span></button>` : ""}
+    ${b ? `<button type="button" class="it" data-act="editBike">${svgIcon('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>')}<span>Edit bike</span></button>` : ""}
     <button type="button" class="it" data-act="newBike">${svgIcon('<path d="M12 5v14M5 12h14"/>')}<span>Add bike</span></button>`;
   side.querySelector("#sideBike").onchange = e => { S.bike = e.target.value; persist(); render() };
 }
@@ -2024,7 +2060,7 @@ function schematics(b) {
   if (!r || !Array.isArray(r.sources) || !r.sources.length) {
     return `<section><div class="card"><h2>Schematics</h2>
       <p class="muted">Looks up ${esc(name || "this bike")} on Wikipedia, Wikimedia Commons, the RDW and US recall databases, spec sites and the web, and sorts it into specs, schematics, mods, known problems, recalls and manuals. Every line says where it came from.</p>
-      ${!can ? '<p class="small" style="color:var(--soon)">Fill in the make and model in the Mac app first.</p>' : ""}
+      ${!can ? '<p class="small" style="color:var(--soon)">Fill in the make and model first.</p><div class="btns"><button class="btn ghost" type="button" data-act="editBike">Edit bike</button></div>' : ""}
       ${b.plate ? '<p class="small muted">Your plate is sent to the RDW to get the official data and open recalls for your exact bike.</p>' : ""}
       ${S.session ? `<div class="btns"><button class="btn" data-act="lookup"${!can || rBusy ? " disabled" : ""}>Look up ${esc(name)}</button></div>` : '<div class="btns"><button class="btn" data-act="account">Sign in to look up</button></div>'}
       ${busy}${msg}</div></section>`;
@@ -2494,29 +2530,148 @@ async function adminSheet(flash) {
   });
 }
 
-function bikeSheet() {
-  openSheet(`${head("Add bike")}<form class="form" id="bk">
-    <label class="f">Name<input id="bn" required placeholder="e.g. Yamaha MT-07"></label>
-    <div class="fields2"><label class="f">Year<input id="by" inputmode="numeric"></label><label class="f">Distance<select id="bu"><option>km</option><option>mi</option></select></label></div>
-    <div class="fields2"><label class="f">Bought on<input id="bd" type="date"></label><label class="f">Price<input id="bp" inputmode="decimal"></label></div>
-    <button class="btn">Add bike</button><p class="small muted" style="margin:0">It starts with a basic schedule. Import the booklet in the Mac app for the full one.</p></form>`, el => {
+function bikeSheet(edit) {
+  const b = edit || {}, val = v => v == null ? "" : esc(String(v));
+  openSheet(`${head(edit ? "Edit bike" : "Add bike")}<form class="form" id="bk">
+    <label class="f">Name<input id="bn" required maxlength="80" value="${val(b.name)}" placeholder="e.g. My MT-07"></label>
+    <div class="fields2"><label class="f">Make<input id="bmk" maxlength="60" value="${val(b.make)}" placeholder="e.g. Yamaha"></label><label class="f">Model<input id="bmd" maxlength="80" value="${val(b.model)}" placeholder="e.g. MT-07"></label></div>
+    <div class="fields2"><label class="f">Year<input id="by" inputmode="numeric" value="${val(b.year)}"></label>${edit ? `<label class="f">Distance<input value="${b.unit === "mi" ? "Miles" : "Kilometres"}" disabled></label>` : '<label class="f">Distance<select id="bu"><option value="km">Kilometres</option><option value="mi">Miles</option></select></label>'}</div>
+    <div class="fields2"><label class="f">Plate<input id="bpl" maxlength="20" value="${val(b.plate)}"></label><label class="f">VIN<input id="bvin" maxlength="40" value="${val(b.vin)}"></label></div>
+    <b style="margin-top:6px">Purchase</b>
+    <div class="fields2"><label class="f">Bought on<input id="bd" type="date" value="${b.purchaseDate ? dateInput(b.purchaseDate) : ""}"></label><label class="f">Price<input id="bp" inputmode="decimal" value="${val(b.purchasePrice)}"></label></div>
+    <label class="f">Odometer when bought${edit ? ` (${esc(b.unit)})` : ""}<input id="bpo" inputmode="decimal" value="${val(b.purchaseOdometer)}" placeholder="optional"></label>
+    <p class="small muted" style="margin:0">The make and model are what the schematics and the parts finder search for. The purchase date and the odometer when bought together count as your first reading.</p>
+    <button class="btn">${edit ? "Save" : "Add bike"}</button></form>`, el => {
     el.querySelector("#bk").onsubmit = e => {
-      e.preventDefault(); const km = el.querySelector("#bu").value === "km", k = v => km ? v : Math.round(v / 1.609344 / 500) * 500;
+      e.preventDefault();
+      const q = id => el.querySelector(id).value.trim();
+      const yr = parseInt(q("#by")), bd = q("#bd"), bp = num(q("#bp")), bpo = num(q("#bpo"));
+      const info = { name: q("#bn"), make: q("#bmk"), model: q("#bmd"), plate: q("#bpl"), vin: q("#bvin") };
+      if (!info.name) return;
+      if (edit) {
+        Object.assign(edit, info);
+        if (yr >= 1885 && yr <= 2100) edit.year = yr; else delete edit.year;
+        if (bd) edit.purchaseDate = iso(fromDateInput(bd, edit.purchaseDate)); else delete edit.purchaseDate;
+        if (bp != null && bp >= 0) edit.purchasePrice = bp; else delete edit.purchasePrice;
+        if (bpo != null && bpo >= 0) edit.purchaseOdometer = bpo; else delete edit.purchaseOdometer;
+        closeSheet(); changed(edit); toast("Bike saved"); return;
+      }
+      const km = el.querySelector("#bu").value === "km", k = v => km ? v : Math.round(v / 1.609344 / 500) * 500;
       const iv = (task, d, m) => ({ id: uuid(), task, ...(d ? { everyDistance: k(d) } : {}), ...(m ? { everyMonths: m } : {}) });
-      const yr = parseInt(el.querySelector("#by").value), bd = el.querySelector("#bd").value, bp = num(el.querySelector("#bp").value);
-      const b = { id: uuid(), updatedAt: iso(new Date()), name: el.querySelector("#bn").value.trim(), make: "", model: "", vin: "", plate: "", unit: km ? "km" : "mi", story: "",
-        ...(yr ? { year: yr } : {}), ...(bd ? { purchaseDate: iso(fromDateInput(bd)) } : {}), ...(bp != null ? { purchasePrice: bp } : {}),
+      const nb = { id: uuid(), updatedAt: iso(new Date()), ...info, unit: km ? "km" : "mi", story: "",
+        ...(yr >= 1885 && yr <= 2100 ? { year: yr } : {}), ...(bd ? { purchaseDate: iso(fromDateInput(bd)) } : {}), ...(bp != null && bp >= 0 ? { purchasePrice: bp } : {}),
+        ...(bpo != null && bpo >= 0 ? { purchaseOdometer: bpo } : {}),
         odometer: [], services: [], fuel: [], mods: [], papers: [], wear: [], checklists: [], restoration: [], shopping: [], photos: [],
         intervals: [iv("Oil and filter", 5000, 12), iv("Chain clean and lube", 1000, 1), iv("Air filter", 10000, 24), iv("Spark plugs", 13000, 24), iv("Brake fluid", null, 24), iv("Coolant", null, 24), iv("Valve clearance check", 24000, null)] };
-      S.file.bikes.push(b); S.bike = b.id; closeSheet(); changed(b); toast("Bike added");
+      S.file.bikes.push(nb); S.bike = nb.id; closeSheet(); changed(nb); toast("Bike added");
     };
   });
 }
+
+// ---------- Overview widgets on a computer, like the Mac app ----------
+// The layout is the bike's "dashboard": [{ id, kind, size }], the same list the Mac app keeps, so it syncs both ways.
+// Sizes: small is one of four columns, medium ("Wide") two, large the full row. No list means the default layout.
+let arranging = false;
+const dashCards = b => b.dashboard ? b.dashboard.map(c => ({ ...c })) : WIDGET_DEFAULTS.map(k => ({ id: uuid(), kind: k, size: WIDGETS[k][1] }));
+function moveWidget(b, id, how) {
+  const cards = dashCards(b), i = b.dashboard ? cards.findIndex(c => c.id === id) : WIDGET_DEFAULTS.indexOf(id);
+  if (i < 0) return;
+  if (how === "left" && i > 0) [cards[i - 1], cards[i]] = [cards[i], cards[i - 1]];
+  else if (how === "right" && i < cards.length - 1) [cards[i + 1], cards[i]] = [cards[i], cards[i + 1]];
+  else if (how === "size") cards[i].size = SIZES[(SIZES.indexOf(cards[i].size) + 1) % 3];
+  else if (how === "remove") cards.splice(i, 1);
+  else return;
+  b.dashboard = cards; changed(b);
+}
+function dropWidget(b, fromId, toId) {
+  const cards = dashCards(b), key = c => b.dashboard ? c.id : c.kind;
+  const from = cards.findIndex(c => key(c) === fromId), to = cards.findIndex(c => key(c) === toId);
+  if (from < 0 || to < 0 || from === to) return;
+  const [c] = cards.splice(from, 1); cards.splice(to, 0, c); b.dashboard = cards; changed(b);
+}
+const tile = (label, value, sub = "") => `<div class="stat"><div class="label">${label}</div><div class="value">${value}</div>${sub ? `<div class="sub">${sub}</div>` : ""}</div>`;
+function odoChart(b) {
+  const pts = readings(b).filter(r => r.date && !isNaN(r.date));
+  if (pts.length < 2) return '<p class="muted small">Log a couple of odometer readings to see the chart.</p>';
+  const W = 800, H = 220, P = 34, x0 = +pts[0].date, x1 = Math.max(+pts[pts.length - 1].date, x0 + DAY), now = mileage(b), est = now > currentOdo(b) + 0.5;
+  const xEnd = est ? Math.max(x1, Date.now()) : x1, lo = Math.min(...pts.map(p => p.value)), hi = Math.max(now, ...pts.map(p => p.value)) || 1;
+  const X = t => P + (t - x0) / (xEnd - x0) * (W - P * 2), Y = v => H - P - (v - lo) / ((hi - lo) || 1) * (H - P * 2);
+  const line = pts.map(p => `${X(+p.date).toFixed(1)},${Y(p.value).toFixed(1)}`).join(" "), last = pts[pts.length - 1];
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="Odometer from ${fmtNum(lo)} to ${fmtNum(hi)} ${esc(b.unit)}">
+    <line x1="${P}" y1="${H - P}" x2="${W - P}" y2="${H - P}" stroke="var(--line)"/>
+    <text x="${P}" y="${H - 10}" class="ax">${fmtDate(pts[0].date)}</text><text x="${W - P}" y="${H - 10}" class="ax" text-anchor="end">${fmtDate(est ? new Date() : last.date)}</text>
+    <text x="${P}" y="${P - 12}" class="ax">${fmtNum(hi)} ${esc(b.unit)}</text>
+    <polyline points="${line}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+    ${est ? `<line x1="${X(+last.date)}" y1="${Y(last.value)}" x2="${X(Date.now())}" y2="${Y(now)}" stroke="var(--accent)" stroke-width="3" stroke-dasharray="6 6"/>` : ""}
+    ${pts.map(p => `<circle cx="${X(+p.date).toFixed(1)}" cy="${Y(p.value).toFixed(1)}" r="4" fill="var(--accent)"/>`).join("")}
+  </svg>${est ? '<p class="small muted" style="margin:0">Dashed: estimated since your last reading.</p>' : ""}`;
+}
+function widgetBody(b, kind) {
+  const vol = b.unit === "km" ? "L" : "gal", up = upcoming(b), next = up.find(x => x.status !== "unknown");
+  switch (kind) {
+    case "odometer": { const now = mileage(b), est = now > currentOdo(b) + 0.5; return tile(est ? "Odometer, estimated" : "Odometer", `${est ? "≈ " : ""}${fmtNum(now)} <span style="font-size:14px">${esc(b.unit)}</span>`) }
+    case "perWeek": { const a = weeklyAverage(b); return tile("Per week", a == null ? "—" : `${fmtNum(a)} <span style="font-size:14px">${esc(b.unit)}</span>`, a == null ? "Log two readings two weeks apart" : "") }
+    case "services": return tile("Services", fmtNum(b.services.length));
+    case "runningCost": return tile("Running cost", fmtMoney(costs(b).running));
+    case "economy": { const e = economy(b); return tile("Economy", e ? `${fmtNum(e, 1)} <span style="font-size:14px">${esc(b.unit)}/${vol}</span>` : "—") }
+    case "restoration": { const r = b.restoration || []; return tile("Restoration", r.length ? `${Math.round(r.filter(s => s.done).length / r.length * 100)}%` : "—") }
+    case "photos": return tile("Photos", fmtNum(b.photos.length));
+    case "nextJob": return tile("Next job", next ? `<span style="font-size:22px">${esc(next.title)}</span>` : "—", next ? esc(next.detail) : "Nothing scheduled");
+    case "upcoming": return `<h3>Upcoming maintenance</h3><div class="jobs">${up.map(jobRow).join("") || '<p class="muted">No schedule yet. Read your service booklet under Service.</p>'}</div>`;
+    case "logOdometer": return `<h3>Log odometer</h3><p class="small muted" style="margin:0">${b.odometer.length} readings. Last: ${fmtNum(currentOdo(b))} ${esc(b.unit)}.</p><div class="btns"><button class="btn" type="button" data-go="log">Log odometer</button></div>`;
+    case "logFuel": return `<h3>Log fuel</h3><p class="small muted" style="margin:0">${b.fuel.length} fills logged.</p><div class="btns"><button class="btn" type="button" data-go="log">Log fuel</button></div>`;
+    case "chart": return `<h3>Odometer over time</h3>${odoChart(b)}`;
+    case "history": {
+      const bought = purchaseReading(b);
+      return `<h3>History since you bought it</h3>${bought
+        ? `<p class="small muted" style="margin:0">The history starts at the ${fmtNum(bought.value)} ${esc(b.unit)} on the day you bought it (${fmtDate(bought.date)}). That counts as a reading, so nothing has to be guessed.</p>`
+        : `<label class="f">My guess, ${esc(b.unit)} a week<input id="wGuess" inputmode="decimal" value="${b.guessedWeekly ?? ""}" placeholder="e.g. 80"></label><p class="small muted" style="margin:0">Only used to draw the history before your first reading. Add the odometer when bought under <button class="linkbtn" type="button" data-act="editBike">Edit bike</button> and no guess is needed.</p>`}`;
+    }
+    case "story": return `<h3>The story</h3><textarea id="wStory" rows="4" maxlength="20000" aria-label="The story" placeholder="Where it came from, what you did to it…">${esc(b.story || "")}</textarea>`;
+    case "report": return `<h3>History report</h3><p class="small muted" style="margin:0">Service history, mods, papers and costs on a few pages. Print it or save it as a PDF.</p><div class="btns"><button class="btn ghost" type="button" data-act="report">Make report</button></div>`;
+  }
+  return "";
+}
+function deskOverview(b) {
+  const cards = dashCards(b), key = c => b.dashboard ? c.id : c.kind, cc = engineSize(b);
+  const missing = Object.keys(WIDGETS).filter(k => !cards.some(c => c.kind === k));
+  const controls = c => `<div class="wctl"><span class="small muted">${esc(WIDGETS[c.kind][0])}</span><span>
+    <button type="button" class="linkbtn" data-wmove="left" data-wid="${esc(key(c))}" aria-label="Move ${esc(WIDGETS[c.kind][0])} back">←</button>
+    <button type="button" class="linkbtn" data-wmove="right" data-wid="${esc(key(c))}" aria-label="Move ${esc(WIDGETS[c.kind][0])} forward">→</button>
+    <button type="button" class="linkbtn" data-wmove="size" data-wid="${esc(key(c))}">${SIZE_NAME[c.size]}</button>
+    <button type="button" class="linkbtn" data-wmove="remove" data-wid="${esc(key(c))}" aria-label="Remove ${esc(WIDGETS[c.kind][0])}" style="color:var(--over)">Remove</button></span></div>`;
+  return `<section class="dashhead"><h2>${esc(b.name)}</h2><div class="btns">${arranging
+    ? `<select id="wAdd" aria-label="Add widget"${missing.length ? "" : " disabled"}><option value="">Add widget…</option>${missing.map(k => `<option value="${k}">${esc(WIDGETS[k][0])}</option>`).join("")}</select>
+       <button class="btn ghost" type="button" data-act="widgetsReset">Reset</button><button class="btn" type="button" data-act="widgetsDone">Done</button>`
+    : '<button class="btn ghost" type="button" data-act="editWidgets">Edit widgets</button><button class="btn ghost" type="button" data-act="editBike">Edit bike</button>'}</div></section>
+  ${arranging ? '<p class="small muted">Drag widgets to move them, or use the arrows. Change the size or remove one with the buttons on top, and add more at the top.</p>' : `<section>
+    <div class="card hero">
+      ${cc ? `<div class="heronum${cc.length > 3 ? " n4" : ""}" aria-hidden="true">${cc}</div>` : ""}
+      <div class="tags">${b.year ? `<span class="tag on">${esc(b.year)}</span>` : ""}${b.make ? `<span class="tag">${esc(b.make)}</span>` : ""}</div>
+      <h1>${esc(b.model || b.name)}</h1>
+      <svg class="bikeart" viewBox="0 0 2518 1478" role="img" aria-label="Side view of a sport bike"><use href="#bikeArt"/></svg>
+      <div class="grid2"><button class="btn" data-act="newService">Log a service</button><button class="btn ghost" data-go="log">Log odometer or fuel</button></div>
+    </div></section>`}
+  <section><div class="dash${arranging ? " arranging" : ""}">${cards.map(c => `<div class="card widget${c.kind === "odometer" ? " dark" : ""}" style="grid-column:span ${SPAN[c.size]}"${arranging ? ` draggable="true" data-wdrag="${esc(key(c))}"` : ""}>${arranging ? controls(c) : ""}${widgetBody(b, c.kind)}</div>`).join("")}</div>
+  ${cards.length ? "" : '<div class="card"><p class="muted">No widgets. Add some with Edit widgets, or reset the layout.</p></div>'}</section>
+  <p class="small muted" style="margin:18px 0 0">Bike silhouette traced from a photo on Wikimedia Commons, CC BY 2.5.</p>`;
+}
+let dragWidget = null;
+document.addEventListener("dragstart", e => { const w = e.target.closest?.("[data-wdrag]"); if (w) { dragWidget = w.dataset.wdrag; e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", dragWidget) } });
+document.addEventListener("dragover", e => { if (dragWidget && e.target.closest?.("[data-wdrag]")) e.preventDefault() });
+document.addEventListener("drop", e => { const w = e.target.closest?.("[data-wdrag]"); if (dragWidget && w) { e.preventDefault(); const b = bike(); if (b) dropWidget(b, dragWidget, w.dataset.wdrag) } dragWidget = null });
+document.addEventListener("dragend", () => { dragWidget = null });
 
 // ---------- Events ----------
 $("#bike").addEventListener("change", e => { S.bike = e.target.value; persist(); render() });
 $("#syncChip").addEventListener("click", accountSheet);
 $("#tabs").addEventListener("click", e => { const t = e.target.closest("button")?.dataset.tab; if (t) { S.tab = t; persist(); render(); scrollTo(0, 0) } });
+document.addEventListener("change", e => {
+  const t = e.target, b = bike(); if (!b) return;
+  if (t.id === "wStory") { b.story = t.value.slice(0, 20000); return changed(b) }
+  if (t.id === "wGuess") { const n = num(t.value); if (n != null && n > 0 && n < 100000) b.guessedWeekly = n; else delete b.guessedWeekly; return changed(b) }
+  if (t.id === "wAdd" && t.value) { const k = t.value; if (WIDGETS[k]) { b.dashboard = [...dashCards(b), { id: uuid(), kind: k, size: WIDGETS[k][1] }]; changed(b) } }
+});
 document.addEventListener("click", e => {
   const b = bike(), a = e.target.closest("[data-act]")?.dataset.act, go = e.target.closest("[data-go]")?.dataset.go;
   if (go) { S.tab = go; persist(); render(); scrollTo(0, 0); return }
@@ -2525,6 +2680,11 @@ document.addEventListener("click", e => {
   if (a === "signout") return signOut();
   if (a === "signoutAll") { if (confirm("Sign out of Garagebook on every device, including the Mac app?")) return signOut(true); return }
   if (a === "newBike") return bikeSheet();
+  if (a === "editBike") return b && bikeSheet(b);
+  if (a === "editWidgets") { arranging = true; return render() }
+  if (a === "widgetsDone") { arranging = false; return render() }
+  if (a === "widgetsReset") { delete b.dashboard; return changed(b) }
+  const wm = e.target.closest("[data-wmove]"); if (wm) return moveWidget(b, wm.dataset.wid, wm.dataset.wmove);
   if (a === "addPhoto") return addPhoto(b);
   if (a === "addPasskey") return addPasskey();
   if (a === "admin") return adminSheet();
