@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-XFX1k8culGUBuz9bDAd3dJm0TX8XoPj45fd4CJ/yz18='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data: https://upload.wikimedia.org https://thumb.wikimedia.org; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co https://opendata.cbs.nl https://ec.europa.eu; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-NIWepIpGpMLw2e6vhRvP2J2AlKV0pU0mkgUW2DbzsxQ='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data: https://upload.wikimedia.org https://thumb.wikimedia.org; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co https://opendata.cbs.nl https://ec.europa.eu; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -648,14 +648,16 @@ function milestones(b, top) {
   const counts = {}; ds.filter(d => d >= 1000).forEach(d => counts[d] = (counts[d] || 0) + 1);
   const common = Object.entries(counts).sort((a, c) => c[1] - a[1] || a[0] - c[0])[0];
   const base = oil || (common && +common[0]); if (!base) return [];
-  const last = Math.max(Math.max(...ds, base), top + base) * 2, out = [];
+  // At most 200 steps, like the Mac app: a huge synced odometer or interval can't freeze the page.
+  const last = Math.min(Math.max(Math.max(...ds, base), top + base) * 2, base * 200), out = [];
   for (let m = base; m <= last; m += base) out.push(m);
   return out;
 }
 const jobsAt = (b, m) => b.intervals.filter(iv => iv.everyDistance > 0 && m / iv.everyDistance >= 1 && Math.abs(m / iv.everyDistance - Math.round(m / iv.everyDistance)) < 0.001).map(iv => iv.task);
 
 // ---------- Merging with the online copy (newest edit of each bike wins; deletes stay deleted) ----------
-function deletedMap(list) { const m = Object.create(null); for (let i = 0; i + 1 < (list || []).length; i += 2) if (/^[0-9A-Fa-f-]{36}$/.test(list[i])) m[list[i]] = list[i + 1]; return m }
+const UUID_RE = /^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$/;
+function deletedMap(list) { const m = Object.create(null); for (let i = 0; i + 1 < (list || []).length; i += 2) if (UUID_RE.test(list[i])) m[list[i].toUpperCase()] = list[i + 1]; return m }
 function deletedList(m) { return Object.entries(m).flat() }
 function merge(mine, disk) {
   const del = deletedMap(mine.deleted);
@@ -678,10 +680,11 @@ function scrub(x, depth = 0) {
     const v = x[k];
     if (NUMERIC.has(k) && !(depth === 0 && LISTS.includes(k))) {   // a bike's "odometer" is its list of readings
       // A number field holds a number, or a digit string that becomes one; anything else is dropped.
-      const n = typeof v === "number" ? v : typeof v === "string" ? Number(v) : NaN;
-      if (v == null) continue; else if (Number.isFinite(n)) x[k] = n; else delete x[k];
+      // Blank text is no value (not 0), and no reading, cost or interval is above 100 million.
+      const n = typeof v === "number" ? v : typeof v === "string" && v.trim() !== "" ? Number(v) : NaN;
+      if (v == null) continue; else if (Number.isFinite(n) && Math.abs(n) < 1e8) x[k] = n; else delete x[k];
     }
-    else if (DATES.has(k) && v != null && (typeof v !== "string" || isNaN(new Date(v)))) delete x[k];
+    else if (DATES.has(k) && v != null && (typeof v !== "string" || isNaN(new Date(v)) || new Date(v).getFullYear() < 1900 || new Date(v).getFullYear() > 2200)) delete x[k];
     else if (typeof v === "number" && !Number.isFinite(v)) delete x[k];
     else if (k === "research" && depth === 0) { if (v && typeof v === "object" && !Array.isArray(v)) scrubLoose(v); else delete x[k] }
     else if (v && typeof v === "object") scrub(v, depth + 1);
@@ -708,7 +711,7 @@ function scrubLoose(x, depth = 0) {
 function clean(f) {
   if (!validFile(f) || f.bikes.length > 500) return null;
   const cap = Date.now() + 300000, seen = new Set();
-  f.bikes = f.bikes.filter(b => typeof b.id === "string" && /^[0-9A-Fa-f-]{36}$/.test(b.id) && !seen.has(b.id) && seen.add(b.id));
+  f.bikes = f.bikes.filter(b => typeof b.id === "string" && UUID_RE.test(b.id) && !seen.has(b.id) && seen.add(b.id));
   for (const b of f.bikes) {
     // Every list is a list (at most 5000 entries) of objects, so views never meet null or text.
     for (const k of LISTS) b[k] = Array.isArray(b[k]) ? b[k].filter(x => x && typeof x === "object" && !Array.isArray(x)).slice(-5000) : [];
@@ -1603,7 +1606,10 @@ async function passkeySignIn(codeChallenge) {
 }
 async function passkeyCreate() {
   const token = S.session ? await freshToken() : null;
-  const { challengeId, options: o } = await passkeyFn("register-options", {}, token);
+  // The very first passkey needs the setup code from Supabase (the OWNER_SETUP_TOKEN secret).
+  const setupToken = token ? undefined : (prompt("Setup code (the OWNER_SETUP_TOKEN secret in Supabase):") || "").trim();
+  if (!token && !setupToken) throw new Error("A setup code is needed to make the first passkey.");
+  const { challengeId, options: o } = await passkeyFn("register-options", token ? {} : { setupToken }, token);
   const cred = await navigator.credentials.create({ publicKey: { challenge: unb64u(o.challenge), rp: o.rp, timeout: o.timeout, attestation: o.attestation,
     user: { id: unb64u(o.user.id), name: o.user.name, displayName: o.user.displayName || "Garagebook" },
     pubKeyCredParams: o.pubKeyCredParams, authenticatorSelection: o.authenticatorSelection,
@@ -1622,7 +1628,7 @@ const passkeyMessage = err => err?.name === "NotAllowedError" ? "Cancelled, or n
 // app is useless without the Mac's secret.
 const appLogin = (() => {
   const q = new URLSearchParams(location.search);
-  return q.get("app") === "mac" && /^[0-9A-Fa-f-]{36}$/.test(q.get("state") || "") && /^[A-Za-z0-9_-]{43}$/.test(q.get("cc") || "")
+  return q.get("app") === "mac" && UUID_RE.test(q.get("state") || "") && /^[A-Za-z0-9_-]{43}$/.test(q.get("cc") || "")
     ? { state: q.get("state"), cc: q.get("cc") } : null;
 })();
 function handBack(j) {
@@ -1642,6 +1648,8 @@ async function sync() {
     const rows = await api(`rest/v1/garages?select=data&user_id=eq.${S.session.id}`, { token });
     const remote = rows?.[0]?.data;
     const safe = remote && clean(remote); if (safe) S.file = merge(S.file, safe);
+    // An online garage this page can't read (newer or damaged) is never overwritten from here.
+    if (remote && !safe) throw new Error("The online garage couldn't be read here. Nothing was changed; open the Mac app to check it.");
     if (!remote || summary(S.file) !== summary(remote) || S.dirty) {
       await api("rest/v1/garages?on_conflict=user_id", { method: "POST", token, prefer: "resolution=merge-duplicates,return=minimal",
         body: { user_id: S.session.id, data: { bikes: S.file.bikes, deleted: S.file.deleted || [] }, updated_at: iso(new Date()) } });
