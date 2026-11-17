@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-E3yw7Svr3XY31YrgJ9e9psVaXS1o/LOWYJZbVhWZpYE='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data: https:; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co https://opendata.cbs.nl https://ec.europa.eu; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-XB4pFsDhx6VJtlIDyhRBLry0czaWSzvaLmrd70uAsBM='; style-src 'unsafe-inline'; font-src 'self'; img-src 'self' blob: data: https:; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co https://opendata.cbs.nl https://ec.europa.eu; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -12,16 +12,33 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-180.png">
 <title>Garagebook</title>
+<meta name="description" content="Garagebook keeps your motorcycle's maintenance, fuel, costs, papers and parts in one place, and tells you what's due. Free and invite-only.">
+<link rel="canonical" href="https://vulpeslag0pus.github.io/garagebook/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Garagebook">
+<meta property="og:title" content="Garagebook: your motorcycle's logbook">
+<meta property="og:description" content="Maintenance, fuel, costs, papers and parts for your motorcycle, and what's due next. Free and invite-only.">
+<meta property="og:url" content="https://vulpeslag0pus.github.io/garagebook/">
+<meta property="og:image" content="https://vulpeslag0pus.github.io/garagebook/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Garagebook icon, a wrench and screwdriver, next to the name Garagebook">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#F3F4F7">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Garagebook","url":"https://vulpeslag0pus.github.io/garagebook/","applicationCategory":"UtilitiesApplication","operatingSystem":"Any (web browser), macOS","description":"A motorcycle logbook for maintenance, fuel, costs, papers and parts, with what's due next.","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"isAccessibleForFree":true,"inLanguage":"en"}</script>
 <meta name="apple-mobile-web-app-title" content="Garagebook">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&display=swap">
 <style>
+/* Fonts are served from this site (fonts/), so no visitor data goes to Google. Both are variable fonts. */
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400 700; font-display: swap; src: url(fonts/inter-latin.woff2) format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400 700; font-display: swap; src: url(fonts/inter-latin-ext.woff2) format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF }
+@font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 500 700; font-display: swap; src: url(fonts/spacegrotesk-latin.woff2) format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD }
+@font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 500 700; font-display: swap; src: url(fonts/spacegrotesk-latin-ext.woff2) format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF }
 /* Layout: one narrow column, a big bike card up top, a floating menu bar at the bottom for one-handed use.
    One accent colour (--accent, the dark blue). --tint is a light version of it. Green, orange and red only mark status.
    The page is always light, also when the phone is in dark mode. */
 :root {
-  --bg: #F3F4F7; --surface: #ffffff; --sunk: #ECEEF5; --fg: #0F1736; --muted: #4B5375; --line: #E1E4EE;
-  --accent: #0F1736; --accent-fg: #ffffff; --tint: #DFE3F2; --nav: #0F1736; --ok: #1F7A4D; --soon: #B25E00; --over: #B42318;
+  --bg: #F3F4F7; --surface: #ffffff; --sunk: #ECEEF5; --fg: #0F1736; --muted: #4B5375; --line: #E1E4EE; --field-line: #7D839C;
+  --accent: #0F1736; --accent-fg: #ffffff; --tint: #DFE3F2; --nav: #0F1736; --ok: #196A42; --soon: #8F4A00; --over: #B42318;
   --display: "Space Grotesk", "Inter", system-ui, sans-serif;
   --body: "Inter", system-ui, -apple-system, sans-serif;
   --r: 20px; color-scheme: light;
@@ -41,6 +58,11 @@ h3 { font-size: 18px }
 button, input, select, textarea { font: inherit; color: inherit }
 button { cursor: pointer }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.stat.dark :focus-visible, .widget.dark :focus-visible { outline-color: #fff }
+html { scroll-padding: 76px 0 calc(110px + env(safe-area-inset-bottom, 0px)) }
+.toast:empty { display: none }
+.sheet:focus { outline: none }
+.row.tap:focus-visible { outline-offset: -2px; border-radius: 10px }
 
 /* Top bar */
 .top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); display: flex; align-items: center; gap: 10px; padding-block: 12px 10px }
@@ -85,6 +107,8 @@ section { display: flex; flex-direction: column; gap: 12px; margin-top: 18px }
 .job:first-child { border-top: 0 }
 .job .icon { grid-row: span 2; width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; background: var(--sunk); color: var(--muted) }
 .job.due .icon { background: color-mix(in srgb, var(--soon) 18%, transparent); color: var(--soon) }
+.job.over .icon { background: color-mix(in srgb, var(--over) 16%, transparent); color: var(--over) }
+.job .name .pill { margin-left: 6px; vertical-align: 2px }
 .job .icon svg { width: 18px; height: 18px }
 .job button.icon { border: 0; padding: 0; cursor: pointer; font: inherit }
 .job button.icon:active { transform: scale(.92) }
@@ -101,6 +125,12 @@ section { display: flex; flex-direction: column; gap: 12px; margin-top: 18px }
 /* Lists and forms */
 .rows { display: flex; flex-direction: column }
 [hidden] { display: none !important }
+p .linkbtn, .small .linkbtn, .muted .linkbtn { text-decoration: underline; text-underline-offset: 3px; min-height: 0; min-width: 0 }
+.ckrow { display: flex; align-items: center; gap: 4px } .ckrow .check { flex: 1 } .ckx { min-width: 36px; min-height: 36px; font-size: 18px; color: var(--muted) }
+.group { margin: 0; gap: 6px } .group h3 { margin: 4px 4px 0; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted) }
+ul.legal { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px } ul.legal a { display: block; padding: 10px 2px; color: var(--fg); text-underline-offset: 3px }
+.credits { margin: 18px 0 0; line-height: 1.7 } .credits a { color: var(--muted); text-underline-offset: 2px }
+details summary { cursor: pointer; padding: 6px 2px }
 /* On a computer (window 1000 px or wider): the Mac app's look. A light sidebar with the bike and its pages, wide content. */
 .side { display: none }
 body.desk .wrap { max-width: 1240px; display: grid; grid-template-columns: 250px minmax(0, 1fr); column-gap: 32px; padding: 0 28px 40px }
@@ -119,7 +149,7 @@ body.desk .dashhead .btns .btn { flex: none; white-space: nowrap }
 .dash .widget.dark { background: var(--accent); color: var(--accent-fg) }
 .dash .widget.dark .label, .dash .widget.dark .sub, .dash .widget.dark .muted { color: color-mix(in srgb, var(--accent-fg) 72%, transparent) }
 .dash .widget.dark .linkbtn { color: var(--accent-fg) }
-.dash.arranging .widget { outline: 2px dashed var(--line); cursor: grab }
+.dash.arranging .widget { outline: 2px dashed color-mix(in srgb, var(--accent) 45%, transparent); cursor: grab }
 .dash .wctl { display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding-bottom: 6px }
 .dash .wctl .linkbtn { margin-left: 8px }
 .dash .chart { width: 100%; height: auto }
@@ -133,7 +163,7 @@ body.desk .dashhead .btns .btn { flex: none; white-space: nowrap }
 .side .it:hover { background: var(--sunk) }
 .side .it[aria-current="page"] { background: var(--accent); color: var(--accent-fg) }
 .side hr { border: 0; border-top: 1px solid var(--line); margin: 8px 4px; width: auto }
-.grid2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; align-items: start }
+body.desk .grid2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; align-items: start }
 label.check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px }
 label.check input { margin-top: 3px }
 label.check > span { flex: 1 }
@@ -158,7 +188,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .row .warn { color: var(--soon); font-size: 12px }
 form, .form { display: flex; flex-direction: column; gap: 10px }
 label.f { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted) }
-label.f input, label.f select, label.f textarea { font-size: 16px; color: var(--fg); background: var(--sunk); border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; width: 100%; min-width: 0 }
+label.f input, label.f select, label.f textarea { font-size: 16px; color: var(--fg); background: var(--sunk); border: 1px solid var(--field-line); border-radius: 9px; padding: 10px 12px; width: 100%; min-width: 0 }
 .fields2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px }
 .fields2 > * { min-width: 0 }
 /* iPhone Safari gives date fields their own minimum width, height and centred text; make them match the others. */
@@ -174,7 +204,7 @@ label.f input[type="date"]::-webkit-calendar-picker-indicator { margin: 0 }
 .btn:disabled { opacity: .45 }
 .btns { display: flex; gap: 10px; flex-wrap: wrap }
 .btns .btn { flex: 1 }
-.linkbtn { background: none; border: 0; padding: 0; color: var(--accent); font-weight: 600 }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--accent); font-weight: 600; min-height: 24px; min-width: 24px }
 
 /* Task picker */
 .tasks { display: flex; flex-direction: column; max-height: 300px; overflow-y: auto; border: 1px solid var(--line); border-radius: 9px; background: var(--sunk) }
@@ -218,7 +248,7 @@ nav.tabs button:focus-visible { outline-color: #fff; outline-offset: -2px; borde
 .receipt { width: 100%; max-height: 260px; object-fit: contain; border-radius: 9px; background: var(--sunk) }
 .steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px }
 @media (prefers-reduced-motion: no-preference) { .sheet { animation: up .18s ease-out } @keyframes up { from { transform: translateY(24px); opacity: .6 } } }
-#rq, #ronly { font-size: 16px; color: var(--fg); background: var(--sunk); border: 0; border-radius: 999px; padding: 0 16px; height: 44px; width: 100%; -webkit-appearance: none; appearance: none }
+#rq, #ronly { font-size: 16px; color: var(--fg); background: var(--sunk); border: 1px solid var(--field-line); border-radius: 999px; padding: 0 16px; height: 44px; width: 100%; -webkit-appearance: none; appearance: none }
 html { padding-top: env(safe-area-inset-top, 0px) }
 body { margin: 0 }
 </style>
@@ -236,7 +266,7 @@ body { margin: 0 }
   <div id="view"></div>
 </div>
 
-<nav class="tabs" id="tabs">
+<nav class="tabs" id="tabs" aria-label="Pages">
   <button type="button" data-tab="overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-6"/></svg>Overview</button>
   <button type="button" data-tab="log"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 20V5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v15"/><path d="M3 20h13"/><path d="M14 9h2a2 2 0 0 1 2 2v5a1.5 1.5 0 0 0 3 0V8l-3-3"/><path d="M7 8h5"/></svg>Log</button>
   <button type="button" data-tab="service"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg>Service</button>
@@ -281,6 +311,9 @@ const hasTime = iv => iv.everyWeeks > 0 || iv.everyMonths > 0;
 const nextTime = (iv, d) => iv.everyWeeks > 0 ? new Date(d.getTime() + Math.min(iv.everyWeeks, 5200) * 7 * DAY) : addMonths(d, Math.min(iv.everyMonths, 1200));
 function monthsBetween(a, b) { let m = (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth()); if (addMonths(a, m) > b) m--; return m }
 const num = v => { const n = parseFloat(String(v).replace(",", ".")); return isFinite(n) ? n : null };
+// Odometers are whole kilometres or miles, typed as people write them: "12.345", "12,345" and "12 345" are all
+// twelve thousand. A comma or dot followed by one or two digits is still a decimal ("12345,5").
+const numOdo = v => { const t = String(v).trim().replace(/[\s\u00A0\u202F']/g, ""); return /^\d{1,3}([.,]\d{3})+$/.test(t) ? num(t.replace(/[.,]/g, "")) : num(t) };
 
 // ---------- Garage logic (same rules as the Mac and iPhone app) ----------
 // What Garagebook worked out for a fuel fill because you left it empty is listed in the fill's "estimated".
@@ -601,7 +634,7 @@ function mileage(b, now = new Date()) {
 }
 // What an empty odometer field shows: the estimate Garagebook works with for that day. A hint, not a value:
 // nothing is saved unless you type the real reading.
-function odoHint(b, date) { const est = odoOn(b, D(date) || new Date(), null, true); return est != null ? `≈ ${fmtNum(Math.round(est))}` : "optional" }
+function odoHint(b, date) { const est = odoOn(b, D(date) || new Date(), null, true); return est != null ? `≈ ${Math.round(est)}` : "optional" }
 const covers = (s, task) => (s.tasks || []).some(t => t.toLowerCase() === task.toLowerCase());
 function lastService(b, task) { return b.services.filter(s => covers(s, task)).sort((x, y) => D(y.date) - D(x.date))[0] }
 const ORDER = { overdue: 0, soon: 1, ok: 2, unknown: 3 };
@@ -633,7 +666,7 @@ function status(b, iv, now = new Date()) {
   return { ...base, status: st, progress, date, detail: parts.length ? parts.join(" · ") : `Last done ${fmtDate(last.date)}` };
 }
 function paperItems(b) {
-  return b.papers.filter(p => p.expires).map(p => {
+  return b.papers.filter(p => p.expires && !(p.until && D(p.until) <= new Date())).map(p => {
     const days = Math.trunc((D(p.expires) - new Date()) / DAY);
     return { id: p.id, title: `${p.kind} renewal`, kind: "paper", status: days < 0 ? "overdue" : days <= 30 ? "soon" : "ok",
              detail: days < 0 ? `Expired ${fmtDate(p.expires)}` : `Expires ${fmtDate(p.expires)}`, progress: null };
@@ -715,11 +748,24 @@ const jobsAt = (b, m) => b.intervals.filter(iv => iv.everyDistance > 0 && m / iv
 const UUID_RE = /^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$/;
 function deletedMap(list) { const m = Object.create(null); for (let i = 0; i + 1 < (list || []).length; i += 2) if (UUID_RE.test(list[i])) m[list[i].toUpperCase()] = list[i + 1]; return m }
 function deletedList(m) { return Object.entries(m).flat() }
-function merge(mine, disk) {
+// Ids of every entry (fill, service, reading…) per bike as they were after the last good sync. An entry that is
+// here but not in that list was added on this device since, so it can't have been deleted elsewhere: it is kept
+// even when the other device's copy of the bike is newer.
+function entryIds(f) { const out = {}; for (const b of f.bikes) out[b.id] = LISTS.flatMap(k => (b[k] || []).map(x => x.id)).filter(Boolean); return out }
+function keepNewEntries(winner, local, known) {
+  const seen = new Set(Array.isArray(known) ? known : []);
+  let kept = 0;
+  for (const k of LISTS) {
+    const ids = new Set((winner[k] || []).map(x => x.id));
+    for (const x of local[k] || []) if (x.id && !ids.has(x.id) && !seen.has(x.id)) { (winner[k] ||= []).push(x); kept++ }
+  }
+  return kept;
+}
+function merge(mine, disk, known = {}) {
   const del = deletedMap(mine.deleted);
   for (const [id, at] of Object.entries(deletedMap(disk.deleted))) del[id] = !del[id] || D(at) > D(del[id]) ? at : del[id];
   const byId = Object.fromEntries(mine.bikes.map(b => [b.id, b]));
-  for (const b of disk.bikes) { const m = byId[b.id]; if (m && D(m.updatedAt) >= D(b.updatedAt)) continue; byId[b.id] = b }
+  for (const b of disk.bikes) { const m = byId[b.id]; if (m && D(m.updatedAt) >= D(b.updatedAt)) continue; if (m) keepNewEntries(b, m, known[b.id]); byId[b.id] = b }
   const order = [...mine.bikes.map(b => b.id), ...disk.bikes.map(b => b.id).filter(id => !mine.bikes.some(b => b.id === id))];
   return { bikes: order.map(id => byId[id]).filter(b => b && !(del[b.id] && D(del[b.id]) >= D(b.updatedAt))), deleted: deletedList(del) };
 }
@@ -809,7 +855,7 @@ function exampleFile() {
   const ago = d => iso(Date.now() - d * DAY), id = uuid();
   const iv = (task, everyDistance, everyMonths) => ({ id: uuid(), task, ...(everyDistance ? { everyDistance } : {}), ...(everyMonths ? { everyMonths } : {}) });
   return { deleted: [], bikes: [{
-    id, updatedAt: ago(0), name: "Example bike", year: 2021, make: "Example", model: "Roadster", vin: "", plate: "", unit: "km",
+    id, updatedAt: ago(0), isExample: true, name: "Example bike", year: 2021, make: "Example", model: "Roadster", vin: "", plate: "", unit: "km",
     purchaseDate: ago(420), purchasePrice: 6900, story: "",
     odometer: [{ id: uuid(), date: ago(120), value: 8200 }, { id: uuid(), date: ago(40), value: 10900 }, { id: uuid(), date: ago(3), value: 12150 }],
     services: [{ id: uuid(), date: ago(330), odometer: 6000, tasks: ["Oil and filter", "Air filter"], shop: "Example garage", cost: 180, notes: "" },
@@ -824,13 +870,14 @@ function exampleFile() {
 // ---------- State ----------
 let S = loadState();
 if (S && S.file) S.file = clean(S.file);
+if (S && (!S.known || typeof S.known !== "object" || Array.isArray(S.known))) delete S.known;
 if (S && S.session && !/^[0-9a-f-]{36}$/i.test(S.session.id || "")) S.session = null;
 if (!S || !S.file) S = { file: exampleFile(), example: true, dirty: false, session: null, lastSync: null, bike: null, tab: "overview" };
 let sheet = null, toastTimer = null;
 const bikes = () => S.file.bikes;
 const bike = () => bikes().find(b => b.id === S.bike) || bikes()[0];
 function changed(b) { b.updatedAt = iso(new Date()); S.dirty = true; persist(); render(); syncSoon() }
-function toast(msg, ms = 2600) { let t = $(".toast"); if (!t) { t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); document.body.append(t) } t.textContent = msg; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.remove(), ms) }
+function toast(msg, ms = 2600) { let t = $(".toast"); if (!t) { t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); document.body.append(t) } t.textContent = msg; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.textContent = "" }, ms) }
 
 // ---------- Fuel prices: the Dutch daily petrol price from CBS open data ----------
 // A copy is kept on this phone and refreshed at most twice a day. The request goes straight from this page
@@ -939,7 +986,7 @@ async function relocateQuietly() {
 const deviceCountry = () => { try { return zoneCountry(Intl.DateTimeFormat().resolvedOptions().timeZone) } catch { return "XX" } };
 // The country a new fill is in, until you pick another: where this phone was located, else its time zone.
 const hereCountry = () => locatedCountry() ?? deviceCountry();
-const hereFrom = () => locatedCountry() ? "this phone's location" : "this phone's time zone";
+const hereFrom = () => locatedCountry() ? "this device's location" : "this device's time zone";
 // The countries to pick from: the ones with fuel prices, plus wherever this fill or this phone is.
 function countryOptions(selected) {
   const list = [...new Set([...PETROL_INDEXED, selected, hereCountry()])].filter(c => c && c !== "XX").map(c => [c, countryName(c)])
@@ -992,12 +1039,12 @@ function fillMissing(c, b) {
 }
 // "Check my location" on the Log page.
 async function useLocation() {
-  toast("Checking where this phone is…", 20000);
+  toast("Checking where this device is…", 20000);
   const where = await locate(20000);
   render();
   if (where === "near") toast(`This phone is within ${COUNTRY_UNSURE_KM} km of a border, too close to tell. Pick the country on the fill.`, 7000);
   else if (where) toast(`This phone is in ${placeName(where)}. New fills use that country.`, 6000);
-  else toast("Couldn't get this phone's location. New fills use the country of its time zone; you can change it on each fill.", 7000);
+  else toast("Couldn't get this device's location. New fills use the country of its time zone; you can change it on each fill.", 7000);
 }
 // Saves a fuel fill from the Log form (fillId null) or the edit sheet. What is left empty is estimated first.
 // That can take a moment (prices may have to be fetched), so the caller reads everything from the page
@@ -1090,8 +1137,17 @@ function render() {
   redrawWaiting = false;
   const b = bike();
   S.bike = b?.id ?? null;
-  $("#bike").innerHTML = bikes().map(x => `<option value="${esc(x.id)}"${x.id === S.bike ? " selected" : ""}>${esc(x.name)}</option>`).join("");
+  $("#bike").innerHTML = bikes().map(x => `<option value="${esc(x.id)}"${x.id === S.bike ? " selected" : ""}>${esc(x.name)}</option>`).join("") + (S.session ? '<option value="__new">+ Add bike…</option>' : "");
+  // A redraw replaces the page, so keyboard focus is put back on the same control afterwards (same id, or the
+  // same data-* attributes): ticking a step, adding one or moving a widget doesn't throw you back to the top.
+  const was = document.activeElement, key = was && was !== document.body && $("#view")?.contains(was) ? focusKey(was) : null;
   renderView(b);
+  if (key && !sheet) { const again = document.querySelector(key); if (again) again.focus({ preventScroll: true }) }
+}
+function focusKey(el) {
+  if (el.id) return `#${CSS.escape(el.id)}`;
+  const attrs = [...el.attributes].filter(a => a.name.startsWith("data-") || a.name === "aria-label");
+  return attrs.length ? `${el.tagName.toLowerCase()}${attrs.map(a => `[${a.name}="${CSS.escape(a.value)}"]`).join("")}` : null;
 }
 function renderChip() {
   const chip = $("#syncChip"), text = $("#syncText");
@@ -1103,9 +1159,10 @@ function renderView(b) {
   renderChip();
   document.querySelectorAll("#tabs button").forEach(t => t.setAttribute("aria-current", t.dataset.tab === S.tab ? "page" : "false"));
   const v = $("#view");
-  if (!b) { v.innerHTML = `<section><div class="card"><h2>No bikes</h2><p class="muted">${S.session ? "Your online garage is empty. Sign in on the Mac app with the same account to upload your bikes, or add one here." : "Sign in to see your garage."}</p><div class="btns">${S.session ? '<button class="btn" data-act="newBike">Add bike</button>' : '<button class="btn" data-act="account">Sign in</button>'}</div></div></section>`; return }
+  if (!b) { v.innerHTML = `<section><div class="card"><h2>No bikes</h2><p class="muted">${S.session ? `Your online garage is empty. Add your first bike to start.${isMacBrowser() ? " Already using the Mac app? Sign in there with the same passkey to upload its bikes." : ""}` : "Sign in to see your garage."}</p><div class="btns">${S.session ? '<button class="btn" data-act="newBike">Add bike</button>' : '<button class="btn" data-act="account">Sign in</button>'}</div></div></section>`; return }
   const banner = S.example ? `<section><div class="banner example"><span>This is an <b>example bike</b>. Sign in to see your own garage.</span><button class="linkbtn" data-act="account">Sign in</button></div></section>`
-    : lastError ? `<section><div class="banner"><span>Not synced: ${esc(lastError)} Your changes are kept on this phone.</span><button class="linkbtn" data-act="sync">Try again</button></div></section>` : "";
+    : !S.session && S.dirty && cloudReady ? `<section><div class="banner"><span>You're signed out, so your latest changes haven't been uploaded. They're kept on this device.</span><button class="linkbtn" data-act="account">Sign in to upload</button></div></section>`
+    : lastError ? `<section><div class="banner"><span>Not synced. ${esc(lastError)} Your changes are kept on this device.</span><button class="linkbtn" data-act="sync">Try again</button></div></section>` : "";
   renderSide();
   if (DESK_ONLY.has(S.tab) && !isDesk()) S.tab = "overview";
   const pages = { overview, log: isDesk() ? x => log(x) + costsCard(x) : log,
@@ -1123,11 +1180,11 @@ function jobRow(it) {
   const due = it.status === "overdue" || it.status === "soon";
   const pct = it.progress == null ? null : Math.max(0, Math.min(1, it.progress));
   const cls = it.status === "overdue" ? "over" : it.status === "soon" ? "soon" : "";
-  return `<div class="job${due ? " due" : ""}">
+  return `<div class="job${due ? " due" : ""}${it.status === "overdue" ? " over" : ""}">
     ${due && !it.kind && !String(it.id).startsWith("wear-")
-      ? `<button type="button" class="icon" data-done="${esc(it.id)}" aria-label="${esc(it.title)}: mark as done">${iconFor(it)}</button>`
+      ? `<button type="button" class="icon" data-done="${esc(it.id)}"${it.bikeId ? ` data-done-bike="${esc(it.bikeId)}"` : ""} aria-label="${esc(it.title)}: mark as done">${iconFor(it)}</button>`
       : `<div class="icon" aria-hidden="true">${iconFor(it)}</div>`}
-    <div class="name">${esc(it.title)}</div>
+    <div class="name">${esc(it.title)}${due ? ` <span class="pill ${cls}">${it.status === "overdue" ? "Overdue" : "Due soon"}</span>` : ""}</div>
     <div class="when">${it.status === "unknown" ? "No record" : esc(it.detail)}</div>
     ${pct != null ? `<div class="bar" role="progressbar" aria-valuenow="${Math.round(pct * 100)}" aria-valuemin="0" aria-valuemax="100" aria-label="${esc(it.title)}"><i class="${cls}" style="width:${(pct * 100).toFixed(1)}%"></i></div>` : `<div class="small muted" style="grid-column:2/4">${it.status === "unknown" ? "Log it once to start the countdown" : ""}</div>`}
   </div>`;
@@ -1168,7 +1225,7 @@ function overview(b) {
       <div class="card stat"><div class="label">On time</div><div class="value">${known.length ? `${onTime}/${known.length}` : "—"}</div><div class="sub">${known.length ? "scheduled jobs" : "No schedule yet"}</div></div>
     </div>
   </section>
-  <section><h2>Upcoming maintenance</h2><div class="card"><div class="jobs">${up.map(jobRow).join("") || '<p class="muted">No schedule yet. Add intervals in the Mac app.</p>'}</div></div></section>
+  <section><h2>Upcoming maintenance</h2><div class="card"><div class="jobs">${up.map(jobRow).join("") || '<p class="muted">No schedule yet. On a computer, open Service and choose Read service booklet. The Mac app can also edit the schedule.</p>'}</div></div></section>
   <section><h2>Costs</h2>
     <div class="grid2">
       <div class="card stat"><div class="label">Total cost to own</div><div class="value">${fmtMoney(c.total)}</div><div class="sub">${b.purchasePrice ? `incl. ${fmtMoney(b.purchasePrice)} purchase` : "Add the purchase price under Edit bike"}</div></div>
@@ -1179,7 +1236,7 @@ function overview(b) {
       <div class="row"><span class="muted">Economy</span><span class="num">${econ ? `${fmtNum(econ, 1)} ${esc(b.unit)}/${vol}` : "—"}</span></div>
     </div></div>
   </section>
-  <p class="small muted" style="margin:18px 0 0">Bike silhouette traced from a photo on Wikimedia Commons, CC BY 2.5.</p>`;
+  ${creditsLine()}`;
 }
 
 function log(b) {
@@ -1190,14 +1247,14 @@ function log(b) {
   const fuel = [...b.fuel].sort((x, y) => D(y.date) - D(x.date));
   return `<section><h2>Odometer</h2><div class="card">
     <form id="odoForm"><div class="fields2">
-      <label class="f">Reading (${esc(b.unit)})<input id="odoVal" inputmode="decimal" required placeholder="${fmtNum(Math.round(mileage(b)))}"></label>
+      <label class="f">Reading (${esc(b.unit)})<input id="odoVal" inputmode="numeric" required placeholder="${Math.round(mileage(b))}"></label>
       <label class="f">Date<input id="odoDate" type="date" value="${dateInput(new Date())}"></label>
     </div><button class="btn">Save reading</button></form></div>
-    <div class="card"><h3>Readings</h3><div class="rows">${odo.map(r => `<div class="row tap" data-edit-odo="${esc(r.id)}"><div><div class="t num">${fmtNum(r.value)} ${esc(b.unit)}</div><div class="small muted">${fmtDate(r.date)}${low.has(r.id) ? ' · <span class="warn">lower than the reading before</span>' : ""}</div></div><span class="linkbtn">Edit</span></div>`).join("") || '<p class="muted">No readings yet.</p>'}</div></div>
+    <div class="card"><h3>Readings</h3><div class="rows">${odo.map(r => `<div class="row tap" role="button" tabindex="0" data-edit-odo="${esc(r.id)}"><div><div class="t num">${fmtNum(r.value)} ${esc(b.unit)}</div><div class="small muted">${fmtDate(r.date)}${low.has(r.id) ? ' · <span class="warn">lower than the reading before</span>' : ""}</div></div><span class="linkbtn">Edit</span></div>`).join("") || '<p class="muted">No readings yet.</p>'}</div></div>
   </section>
   <section><h2>Fuel</h2><div class="card">
     <form id="fuelForm"><div class="fields2">
-      <label class="f">Odometer (${esc(b.unit)})<input id="fOdo" inputmode="decimal" placeholder="${fmtNum(Math.round(mileage(b)))}"></label>
+      <label class="f">Odometer (${esc(b.unit)})<input id="fOdo" inputmode="numeric" placeholder="${Math.round(mileage(b))}"></label>
       <label class="f">Amount (${vol})<input id="fVol" inputmode="decimal" placeholder="optional"></label>
       <label class="f">Paid<input id="fTot" inputmode="decimal" placeholder="optional"></label>
       <label class="f">Date<input id="fDate" type="date" value="${dateInput(new Date())}"></label>
@@ -1207,7 +1264,7 @@ function log(b) {
       <button class="btn">Save fill</button></form>
       <p class="small muted" id="fuelPriceNote" style="margin:14px 0 0">${esc(priceSourceNote(b))}</p>
       ${b.unit === "km" ? '<button class="linkbtn" type="button" data-act="locate" style="margin-top:6px">Check my location</button>' : ""}</div>
-    <div class="card"><h3>Fills</h3><div class="rows">${fuel.map(f => `<div class="row tap" data-edit-fuel="${esc(f.id)}"><div><div class="t num">${isEst(f, "volume") ? "≈ " : ""}${fmtNum(f.volume, 2)} ${b.unit === "km" ? "L" : "gal"} · ${isEst(f, "total") ? "≈ " : ""}${fmtMoney(f.total)}</div><div class="small muted">${fmtDate(f.date)} · ${isEst(f, "odometer") ? "≈ " : ""}${fmtNum(f.odometer)} ${esc(b.unit)}${b.unit === "km" && fillCountry(f) !== hereCountry() ? ` · ${esc(countryName(fillCountry(f)))}` : ""}${f.full ? "" : " · not full"}${f.estimated?.length ? " · ≈ estimated" : ""}</div></div><span class="linkbtn">Edit</span></div>`).join("") || '<p class="muted">No fills yet.</p>'}</div></div>
+    <div class="card"><h3>Fills</h3><div class="rows">${fuel.map(f => `<div class="row tap" role="button" tabindex="0" data-edit-fuel="${esc(f.id)}"><div><div class="t num">${isEst(f, "volume") ? "≈ " : ""}${fmtNum(f.volume, 2)} ${b.unit === "km" ? "L" : "gal"} · ${isEst(f, "total") ? "≈ " : ""}${fmtMoney(f.total)}</div><div class="small muted">${fmtDate(f.date)} · ${isEst(f, "odometer") ? "≈ " : ""}${fmtNum(f.odometer)} ${esc(b.unit)}${b.unit === "km" && fillCountry(f) !== hereCountry() ? ` · ${esc(countryName(fillCountry(f)))}` : ""}${f.full ? "" : " · not full"}${f.estimated?.length ? " · ≈ estimated" : ""}</div></div><span class="linkbtn">Edit</span></div>`).join("") || '<p class="muted">No fills yet.</p>'}</div></div>
   </section>`;
 }
 
@@ -1216,7 +1273,7 @@ function serviceOdoGuess(b, s) { const est = odoOn(b, D(s.date), null, true); re
 function service(b) {
   const list = [...b.services].sort((x, y) => D(y.date) - D(x.date));
   return `<section><div class="btns"><button class="btn" data-act="newService">Log service</button></div>
-    <div class="card"><div class="rows">${list.map(s => `<div class="row tap" data-edit-service="${esc(s.id)}"><div><div class="t">${esc((s.tasks || []).join(", ") || "Service")}</div><div class="small muted">${fmtDate(s.date)}${s.odometer != null ? ` · ${fmtNum(s.odometer)} ${esc(b.unit)}` : serviceOdoGuess(b, s)}${s.shop ? ` · ${esc(s.shop)}` : ""}</div></div><span class="num">${fmtMoney(s.cost)}</span></div>`).join("") || '<p class="muted">No services logged yet.</p>'}</div></div>
+    <div class="card"><div class="rows">${list.map(s => `<div class="row tap" role="button" tabindex="0" data-edit-service="${esc(s.id)}"><div><div class="t">${esc((s.tasks || []).join(", ") || "Service")}</div><div class="small muted">${fmtDate(s.date)}${s.odometer != null ? ` · ${fmtNum(s.odometer)} ${esc(b.unit)}` : serviceOdoGuess(b, s)}${s.shop ? ` · ${esc(s.shop)}` : ""}</div></div><span class="num">${fmtMoney(s.cost)}</span></div>`).join("") || '<p class="muted">No services logged yet.</p>'}</div></div>
   </section>`;
 }
 
@@ -1228,7 +1285,7 @@ function papers(b) {
     <div class="btns"><button class="btn" data-act="newPaper">Add paper or insurance</button></div>
     <div class="card"><div class="rows">${list.map(p => {
       const item = paperItems(b).find(i => i.id === p.id), plan = p.billing || "One-off";
-      return `<div class="row tap" data-edit-paper="${esc(p.id)}"><div><div class="t">${esc(p.kind)}${p.provider ? ` · ${esc(p.provider)}` : ""}</div><div class="small muted">${plan === "One-off" ? fmtMoney(p.cost) : `${fmtMoney(p.cost)}/${plan === "Monthly" ? "month" : "year"} · ${fmtMoney(paid(b, p))} paid so far`}${item ? ` · ${esc(item.detail)}` : ""}</div></div>${item ? `<span class="pill ${item.status === "overdue" ? "over" : item.status}">${item.status === "overdue" ? "Expired" : item.status === "soon" ? "Soon" : "OK"}</span>` : ""}</div>`;
+      return `<div class="row tap" role="button" tabindex="0" data-edit-paper="${esc(p.id)}"><div><div class="t">${esc(p.kind)}${p.provider ? ` · ${esc(p.provider)}` : ""}</div><div class="small muted">${plan === "One-off" ? fmtMoney(p.cost) : `${fmtMoney(p.cost)}/${plan === "Monthly" ? "month" : "year"} · ${fmtMoney(paid(b, p))} paid so far`}${item ? ` · ${esc(item.detail)}` : ""}</div></div>${item ? `<span class="pill ${item.status === "overdue" ? "over" : item.status}">${item.status === "overdue" ? "Expired" : item.status === "soon" ? "Soon" : "OK"}</span>` : ""}</div>`;
     }).join("") || '<p class="muted">No papers yet.</p>'}</div></div>
   </section>`;
 }
@@ -1263,7 +1320,7 @@ function renderSide() {
     <div class="pages">${b ? DESK_PAGES.map(([t, l, i]) => row(t, l, i)).join("") : ""}</div><hr>
     ${row("due", "What's due", '<path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21h4"/>')}
     ${row("exports", "Export", '<path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/>')}
-    <button type="button" class="it" data-act="account">${svgIcon('<path d="M4 12a8 8 0 0 1 14-5l2-2v6h-6l2-2a5 5 0 1 0 1 5"/>')}<span>${S.session ? "Online sync on" : "Set up online sync"}</span></button>
+    <button type="button" class="it" data-act="account">${svgIcon('<path d="M4 12a8 8 0 0 1 14-5l2-2v6h-6l2-2a5 5 0 1 0 1 5"/>')}<span>${S.session ? "Account and sync" : "Sign in"}</span></button>
     ${S.me?.owner ? `<button type="button" class="it" data-act="admin">${svgIcon('<circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M17 11l2 2 3-3"/>')}<span>Admin control</span></button>` : ""}
     ${b ? `<button type="button" class="it" data-act="editBike">${svgIcon('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>')}<span>Edit bike</span></button>` : ""}
     <button type="button" class="it" data-act="newBike">${svgIcon('<path d="M12 5v14M5 12h14"/>')}<span>Add bike</span></button>`;
@@ -1297,7 +1354,7 @@ function wearSheet(b, r) {
     <label class="f">Date<input id="eWd" type="date" value="${dateInput(r.date)}"></label><label class="f">Odometer<input id="eWo" inputmode="decimal" value="${r.odometer ?? ""}"></label>
     <button class="btn">Save</button><button class="btn danger" type="button" id="eWx">Delete reading</button></form>`, el => {
     el.querySelector("#eW").onsubmit = e => { e.preventDefault(); const v = num(el.querySelector("#eWv").value); if (v == null) return;
-      r.value = v; r.date = iso(fromDateInput(el.querySelector("#eWd").value, r.date)); const o = num(el.querySelector("#eWo").value); if (o == null) delete r.odometer; else r.odometer = o;
+      r.value = v; r.date = iso(fromDateInput(el.querySelector("#eWd").value, r.date)); const o = numOdo(el.querySelector("#eWo").value); if (o == null) delete r.odometer; else r.odometer = o;
       closeSheet(); changed(b) };
     confirmDelete(el.querySelector("#eWx"), () => { b.wear = b.wear.filter(x => x.id !== r.id); closeSheet(); changed(b) });
   });
@@ -1337,7 +1394,7 @@ function checklists(b) {
   const lists = b.checklists || [];
   return `${pageHead("Checklists")}<section class="grid2">${lists.map(l => `<div class="card form"><div class="row" style="border:0;padding-top:0"><b>${esc(l.title)}</b>
       <span class="small muted">${l.items.filter(i => i.done).length}/${l.items.length}</span></div>
-      ${l.items.map(i => `<label class="check"><input type="checkbox" data-ck="${esc(l.id)}|${esc(i.id)}"${i.done ? " checked" : ""}><span>${esc(i.text)}</span><button class="linkbtn" type="button" data-ckdel="${esc(l.id)}|${esc(i.id)}" aria-label="Delete">×</button></label>`).join("")}
+      ${l.items.map(i => `<div class="ckrow"><label class="check"><input type="checkbox" data-ck="${esc(l.id)}|${esc(i.id)}"${i.done ? " checked" : ""}><span>${esc(i.text)}</span></label><button class="linkbtn ckx" type="button" data-ckdel="${esc(l.id)}|${esc(i.id)}" aria-label="Delete step: ${esc(i.text)}">×</button></div>`).join("")}
       <form class="addrow" data-ckadd="${esc(l.id)}"><input placeholder="Add a step" aria-label="Add a step to ${esc(l.title)}"><button class="btn ghost small" type="submit">Add</button></form>
       <div class="btns"><button class="btn ghost small" type="button" data-ckreset="${esc(l.id)}">Reset</button><button class="btn danger small" type="button" data-cklist="${esc(l.id)}">Delete list</button></div></div>`).join("")}</section>
     <section><form class="card addrow" data-ckadd="new"><input placeholder="New checklist name" aria-label="New checklist name"><button class="btn ghost small" type="submit">Add list</button></form>
@@ -1393,22 +1450,31 @@ function syncPartMods(b, before) {
       b.mods.push({ id: uuid(), date: iso(new Date()), title: p.name || "Part", category: modGuess(p.name), brand: "", partNumber: p.partNumber || "",
         cost: (p.price || 0) * (p.qty || 1), notes: p.store ? `From the parts list. Bought at ${p.store}.` : "From the parts list.", fromPart: p.id });
     else if (!now && then) b.mods = b.mods.filter(m => m.fromPart !== p.id);
+    else if (now && then) {
+      const old = before.find(x => x.id === p.id), m = b.mods.find(m => m.fromPart === p.id), cost = x => (x.price || 0) * (x.qty || 1);
+      if (old && m && m.cost === cost(old) && cost(p) !== cost(old)) m.cost = cost(p);
+    }
   }
 }
-function changedParts(b, before) { syncPartMods(b, before); changed(b) }
+function changedParts(b, before) {
+  const was = new Map(before.map(p => [p.id, !!(p.bought && p.mod)]));
+  const losing = (b.shopping || []).filter(p => was.get(p.id) && !(p.bought && p.mod)).map(p => (b.mods || []).find(m => m.fromPart === p.id)).filter(Boolean);
+  if (losing.length && !confirm(`This also removes "${losing.map(m => m.title).join('", "')}" from Mods and upgrades, with any changes you made there. Continue?`)) { b.shopping = before; return render() }
+  syncPartMods(b, before); changed(b);
+}
 const snapshot = b => (b.shopping || []).map(p => ({ ...p }));
 function shopping(b) {
   const list = (b.shopping || []).slice().sort((x, y) => (x.bought - y.bought) || String(x.name).localeCompare(String(y.name)));
-  const c = costs(b), spent = c.running - c.fuel, planned = list.filter(p => !p.bought).reduce((s, p) => s + (p.price || 0) * (p.qty || 1), 0);
+  const c = costs(b), spent = c.running - c.fuel, planned = list.filter(p => !p.bought).reduce((s, p) => s + (p.price || 0) * (p.qty || 1), 0), unpriced = list.filter(p => !p.bought && p.priceUnknown).length;
   return `${pageHead("Budget and parts list")}
     <section><div class="card form"><div class="fields2"><label class="f">Budget<input id="budget" inputmode="decimal" value="${b.budget ?? ""}"></label><span></span></div>
     ${b.budget > 0 ? `<div class="bar" style="grid-column:auto"><i class="${spent > b.budget ? "over" : ""}" style="width:${Math.min(100, spent / b.budget * 100).toFixed(1)}%"></i></div>` : ""}
-    <p class="small muted" style="margin:0">Spent ${fmtMoney(spent)} on parts, service, mods and papers · ${fmtMoney(planned)} still on the list${b.budget > 0 ? ` · ${fmtMoney(b.budget - spent - planned)} left after the list` : ""}</p></div></section>
+    <p class="small muted" style="margin:0">Spent ${fmtMoney(spent)} on parts, service, mods and papers · ${fmtMoney(planned)} still on the list${unpriced ? ` (${unpriced} without a price)` : ""}${b.budget > 0 ? ` · ${b.budget - spent - planned < 0 ? `${fmtMoney(spent + planned - b.budget)} over budget` : `${fmtMoney(b.budget - spent - planned)} left after the list`}` : ""}</p></div></section>
     <section><div class="btns"><button class="btn" type="button" data-act="newPart">Add part</button></div><div class="card">
-    ${list.length ? list.map(p => `<div class="row"><input type="checkbox" data-pbought="${esc(p.id)}"${p.bought ? " checked" : ""} aria-label="Bought">
+    ${list.length ? list.map(p => `<div class="row"><input type="checkbox" data-pbought="${esc(p.id)}"${p.bought ? " checked" : ""} aria-label="Bought: ${esc(p.name || "Part")}">
       <div style="flex:1;min-width:0"><span style="${p.bought ? "text-decoration:line-through" : ""}">${esc(p.name || "Part")}</span><div class="small muted">${[p.partNumber, p.store, p.qty > 1 ? `×${p.qty}` : ""].filter(Boolean).map(esc).join(" · ")}</div></div>
-      <button type="button" class="pill${p.mod ? " on" : ""}" data-pmod="${esc(p.id)}" title="${p.mod ? "A mod: once bought it's also under Mods and upgrades" : "Mark as a mod"}">Mod</button>
-      <span class="num">${fmtMoney((p.price || 0) * (p.qty || 1))}</span><button class="linkbtn" type="button" data-part="${esc(p.id)}">Edit</button></div>`).join("") : '<p class="muted" style="margin:0">No parts on the list yet. Add them here or from the parts finder.</p>'}</div></section>`;
+      <button type="button" class="pill${p.mod ? " on" : ""}" data-pmod="${esc(p.id)}" aria-pressed="${p.mod ? "true" : "false"}" aria-label="Mod: ${esc(p.name || "Part")}" title="${p.mod ? "A mod: once bought it's also under Mods and upgrades" : "Mark as a mod"}">Mod</button>
+      <span class="num">${p.priceUnknown ? '<span class="muted">Price?</span>' : fmtMoney((p.price || 0) * (p.qty || 1))}</span><button class="linkbtn" type="button" data-part="${esc(p.id)}" aria-label="Edit ${esc(p.name || "part")}">Edit</button></div>`).join("") : '<p class="muted" style="margin:0">No parts on the list yet. Add them here or from the parts finder.</p>'}</div></section>`;
 }
 function partSheet(b, p) {
   const isNew = !p; p = p || { id: uuid(), name: "", partNumber: "", store: "", price: 0, qty: 1, bought: false };
@@ -1420,7 +1486,7 @@ function partSheet(b, p) {
     <button class="btn">Save</button>${isNew ? "" : '<button class="btn danger" type="button" id="pX">Delete part</button>'}</form>`, el => {
     const v = id => el.querySelector(id);
     el.querySelector("#eP").onsubmit = e => { e.preventDefault(); const before = snapshot(b);
-      Object.assign(p, { name: v("#pN").value.trim(), partNumber: v("#pNo").value.trim(), store: v("#pS").value.trim(), price: num(v("#pP").value) ?? 0,
+      Object.assign(p, { name: v("#pN").value.trim(), partNumber: v("#pNo").value.trim(), store: v("#pS").value.trim(), price: num(v("#pP").value) ?? 0, priceUnknown: undefined,
         qty: Math.max(1, Math.min(99, parseInt(v("#pQ").value) || 1)), bought: v("#pB").checked });
       if (v("#pM").checked) p.mod = true; else delete p.mod;
       if (isNew) (b.shopping ||= []).push(p); closeSheet(); changedParts(b, before) };
@@ -1431,16 +1497,18 @@ function partSheet(b, p) {
 // ---------- What's due, across every bike ----------
 function due() {
   const rows = bikes().map(b => [b, upcoming(b).filter(it => it.status === "overdue" || it.status === "soon")]).filter(([, its]) => its.length);
+  const unlogged = bikes().map(b => [b, upcoming(b).filter(it => it.status === "unknown").length]).filter(([, n]) => n);
   return `${pageHead("What's due", "Service, papers and worn parts across every bike.")}
     ${rows.length ? rows.map(([b, its]) => `<section><div class="card"><div class="row" style="border:0;padding-top:0"><b>${esc(b.name)}</b><button class="linkbtn" type="button" data-openbike="${esc(b.id)}">Open</button></div>
-      ${its.map(jobRow).join("")}</div></section>`).join("") : '<section><div class="card"><p class="muted" style="margin:0">Nothing due. Nice.</p></div></section>'}`;
+      ${its.map(it => jobRow({ ...it, bikeId: b.id })).join("")}</div></section>`).join("") : '<section><div class="card"><p class="muted" style="margin:0">Nothing due. Ride on.</p></div></section>'}
+    ${unlogged.length ? `<section><div class="card"><p class="small muted" style="margin:0">Not counted yet, because they were never logged: ${unlogged.map(([b, n]) => `${n} job${n === 1 ? "" : "s"} on ${esc(b.name)}`).join(", ")}. Log each one once to start its countdown.</p></div></section>` : ""}`;
 }
 
 // ---------- Export: a printable report and a calendar file ----------
 function exports(b) {
   return `${pageHead("Export")}<section class="grid2">
     <div class="card form"><b>History report</b><p class="small muted" style="margin:0">Everything about ${esc(b.name)} on a few pages: services, fuel, mods, papers and costs. Choose "Save as PDF" in the print window.</p><button class="btn" type="button" data-act="report">Make report</button></div>
-    <div class="card form"><b>Calendar</b><p class="small muted" style="margin:0">Due dates for service and papers of every bike as a calendar file (.ics), with an alert a week ahead. Open it to add them to your calendar.</p><button class="btn" type="button" data-act="calendar">Download calendar</button></div></section>`;
+    <div class="card form"><b>Calendar</b><p class="small muted" style="margin:0">Due dates for service and papers of every bike as a calendar file (.ics). Most calendar apps also show an alert a week ahead. It is a snapshot: download it again after logging work.</p><button class="btn" type="button" data-act="calendar">Download calendar</button></div></section>`;
 }
 function report(b) {
   const c = costs(b), rows = (h, xs) => xs.length ? `<h3>${esc(h)}</h3><table>${xs.join("")}</table>` : "";
@@ -1457,13 +1525,16 @@ function icsText() {
   const e = s => String(s).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/[\r\n]+/g, "\\n");
   const day = d => { const x = new Date(d); return `${x.getFullYear()}${String(x.getMonth() + 1).padStart(2, "0")}${String(x.getDate()).padStart(2, "0")}` };
   const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
-  const ev = [];
+  const ev = [], today = new Date(); today.setHours(0, 0, 0, 0);
+  // Something already late is put on today (an alert for a date in the past never goes off), marked as overdue.
+  const add = (uid, d, title, note) => { const late = new Date(d) < today; ev.push([uid, late ? today : d, `${late ? "Overdue: " : ""}${title}`, note]) };
   for (const b of bikes()) {
-    for (const iv of b.intervals) { const st = status(b, iv); if (st.date) ev.push([`${iv.id}@garagebook`, st.date, `${b.name}: ${iv.task}`]) }
-    for (const p of b.papers) if (p.expires) ev.push([`${p.id}@garagebook`, p.expires, `${b.name}: ${p.kind} renewal`]);
+    for (const iv of b.intervals) { const st = status(b, iv); if (st.date) add(`${iv.id}@garagebook`, st.date, `${b.name}: ${iv.task}`, `${st.detail || ""}${iv.everyDistance ? ". The date is estimated from how much you ride." : ""}`) }
+    for (const p of b.papers) if (p.expires) add(`${p.id}@garagebook`, p.expires, `${b.name}: ${p.kind} renewal`, "");
   }
-  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Garagebook//EN", ...ev.flatMap(([uid, d, t]) => ["BEGIN:VEVENT", `UID:${e(uid)}`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${day(d)}`, `SUMMARY:${e(t)}`,
-    "BEGIN:VALARM", "ACTION:DISPLAY", `DESCRIPTION:${e(t)}`, "TRIGGER:-P7D", "END:VALARM", "END:VEVENT"]), "END:VCALENDAR"];
+  const seq = Math.floor(Date.now() / 60000);   // a newer download replaces the events from an older one
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Garagebook//EN", ...ev.flatMap(([uid, d, t, note]) => ["BEGIN:VEVENT", `UID:${e(uid)}`, `DTSTAMP:${stamp}`, `LAST-MODIFIED:${stamp}`, `SEQUENCE:${seq}`, `DTSTART;VALUE=DATE:${day(d)}`, `SUMMARY:${e(t)}`,
+    ...(note ? [`DESCRIPTION:${e(note)}`] : []), "BEGIN:VALARM", "ACTION:DISPLAY", `DESCRIPTION:${e(t)}`, "TRIGGER:-P7D", "END:VALARM", "END:VEVENT"]), "END:VCALENDAR"];
   return lines.join("\r\n") + "\r\n";
 }
 function downloadCalendar() {
@@ -1529,26 +1600,27 @@ function finderPage(b) {
   const f = finder, a = f.allowance, label = bikeLabel(b);
   if (!f.shown || f.shown.bike !== label) { const last = partsCache().filter(e => e.bike === label).sort((x, y) => y.at - x.at)[0]; f.shown = last || null; f.saved = !!last; if (last && !f.query) f.query = last.query }
   const left = a ? (a.left > 0 ? `${a.left} of ${a.limit} searches left this week. Repeating a search from the last week is free.`
-    : `${a.reason === "person" ? `You've used your ${a.limit} searches for this week.` : a.reason === "budget" ? "This month's Exa budget is used." : "All searches for this week are used."}${a.nextFreeAt ? ` The next one is free on ${new Date(a.nextFreeAt).toLocaleString(lang, { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}.` : ""} Saved results still work.`) : "";
+    : `${a.reason === "person" ? `You've used your ${a.limit} searches for the last 7 days.` : a.reason === "budget" ? "This month's shared search budget is used up." : "All searches for the last 7 days are used."}${a.nextFreeAt ? ` The next one is free on ${new Date(a.nextFreeAt).toLocaleString(lang, { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}.` : ""} Saved results still work.`) : "";
   const card = h => {
     const price = h.price != null ? new Intl.NumberFormat(lang, { style: "currency", currency: h.currency || "EUR" }).format(h.price) : null;
     const img = safeHref(h.image), href = safeHref(h.url);
-    return `<div class="card pcard">${img ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer" data-pimg>` : '<div class="noimg small muted">No picture on this page</div>'}
+    return `<div class="card pcard">${img ? `<img src="${esc(img)}" alt="${esc(h.title || "Product picture")}" loading="lazy" referrerpolicy="no-referrer" data-pimg>` : '<div class="noimg small muted">No picture on this page</div>'}
       <b>${esc(h.title)}</b><span class="small muted">${esc(h.shop)}</span>
       ${price || h.partNumber ? `<div><span class="num" style="font-weight:700">${esc(price || "")}</span>${h.currency && h.currency !== "EUR" && h.priceEur != null ? ` <span class="small">≈ ${fmtMoney(h.priceEur)}</span>` : ""}${h.partNumber ? ` <span class="small muted">${esc(h.partNumber)}</span>` : ""}<div class="small muted">From the page; check it at the shop.</div></div>` : ""}
       ${h.excerpt ? `<p class="small muted" style="margin:0">${esc(h.excerpt)}</p>` : ""}
       <div class="btns">${href ? `<a class="btn ghost small" href="${esc(href)}" target="_blank" rel="noopener noreferrer">Open</a>` : ""}<button class="btn small" type="button" data-padd="${esc(h.url)}">Add to parts list</button></div></div>`;
   };
   return `${pageHead("Parts finder", `Searches shops for parts for your ${esc(label)}.`)}
-    <section><form class="card form" id="finderForm"><div class="addrow"><input id="fq" value="${esc(f.query)}" placeholder='Part name or number, like "brake pads" or "06455-MEL-D21"' aria-label="Part"><button class="btn small" type="submit"${f.busy ? " disabled" : ""}>${f.busy ? "Searching…" : "Search"}</button></div>
+    <section><form class="card form" id="finderForm"><label class="f" for="fq">Part name or number</label><div class="addrow"><input id="fq" value="${esc(f.query)}" placeholder='e.g. brake pads or 06455-MEL-D21'><button class="btn small" type="submit"${f.busy ? " disabled" : ""}>${f.busy ? "Searching…" : "Search"}</button></div>
+    ${!(b.make && b.model) ? '<p class="small" style="margin:0;color:var(--soon)">Fill in the make and model under <button class="linkbtn" type="button" data-act="editBike">Edit bike</button> for better results.</p>' : ""}
     ${left ? `<p class="small ${a.left > 0 ? "muted" : ""}" style="margin:0;${a.left > 0 ? "" : "color:var(--soon)"}">${esc(left)}</p>` : ""}${f.error ? `<p class="small" style="margin:0;color:var(--over)">${esc(f.error)}</p>` : ""}</form></section>
     ${f.shown ? `<section><div class="row" style="border:0"><div><h3>Results for “${esc(f.shown.query)}”</h3>${f.saved ? `<span class="small muted">Saved from ${esc(new Date(f.shown.at).toLocaleString(lang, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }))}. Showing them again is free.</span>` : ""}</div>
-      ${f.saved ? `<button class="btn ghost small" type="button" data-act="searchAgain"${f.busy || a?.left === 0 ? " disabled" : ""}>Search again</button>` : ""}</div>
+      ${f.saved ? `<button class="btn ghost small" type="button" data-act="searchAgain"${f.busy || a?.left === 0 ? " disabled" : ""} title="Uses one of your searches">Search again (uses 1 search)</button>` : ""}</div>
       ${f.shown.hits.length ? `<div class="pgrid">${f.shown.hits.map(card).join("")}</div>` : '<p class="muted">No shop pages found. Try other words, or the part number from your manual.</p>'}</section>` : ""}`;
 }
 async function finderAllowance() {
   if (!S.session || finder.allowance) return;
-  try { finder.allowance = await api("functions/v1/parts", { method: "POST", token: await freshToken(), body: { status: true } }); if (S.tab === "finder") render() } catch {}
+  try { finder.allowance = await api("functions/v1/parts", { method: "POST", token: await freshToken(), body: { status: true } }); if (S.tab === "finder") renderQuietly() } catch {}
 }
 async function finderSearch(b, fresh) {
   const q = finder.query.trim(); if (q.length < 2 || finder.busy) return;
@@ -1573,7 +1645,7 @@ function finderAdd(b, url) {
   const before = snapshot(b), eur = h.currency && h.currency !== "EUR" ? h.priceEur : h.price;
   (b.shopping ||= []).push({ id: uuid(), name: h.title.length > 80 ? h.title.slice(0, 79) + "…" : h.title, partNumber: h.partNumber || pqKey(finder.shown.query).numbers[0] || "",
     store: h.currency && h.currency !== "EUR" && h.price != null ? `${h.shop} · ${new Intl.NumberFormat(lang, { style: "currency", currency: h.currency }).format(h.price)}` : h.shop,
-    price: eur ?? 0, qty: 1, bought: false });
+    price: eur ?? 0, ...(eur == null ? { priceUnknown: true } : {}), qty: 1, bought: false });
   changedParts(b, before); toast("Added to the parts list");
 }
 
@@ -1594,8 +1666,8 @@ document.addEventListener("click", e => {
   if (id("mod")) return modSheet(b, b.mods.find(m => m.id === id("mod")));
   if (a === "newMod") return modSheet(b);
   if (id("ckdel")) { const [l, i] = id("ckdel").split("|"); const list = b.checklists.find(x => x.id === l); if (list) { list.items = list.items.filter(x => x.id !== i); changed(b) } return }
-  if (id("ckreset")) { const list = b.checklists.find(x => x.id === id("ckreset")); list?.items.forEach(x => x.done = false); return changed(b) }
-  if (id("cklist")) { const btn = t.closest("[data-cklist]"); if (btn.dataset.armed) { b.checklists = b.checklists.filter(x => x.id !== id("cklist")); return changed(b) } btn.dataset.armed = "1"; btn.textContent = "Click again to delete"; return }
+  if (id("ckreset")) { const list = b.checklists.find(x => x.id === id("ckreset")); const n = list?.items.filter(x => x.done).length || 0; if (!n || !confirm(`Untick all ${n} steps of "${list.title}"?`)) return; list.items.forEach(x => x.done = false); return changed(b) }
+  if (id("cklist")) { const btn = t.closest("[data-cklist]"); if (btn.dataset.armed) { b.checklists = b.checklists.filter(x => x.id !== id("cklist")); toast("List deleted"); return changed(b) } btn.dataset.armed = "1"; btn.textContent = "Press again to delete"; setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.textContent = "Delete list" } }, 3000); return }
   if (a === "stdChecklists") { b.checklists = STANDARD_CHECKLISTS.map(([title, items]) => ({ id: uuid(), title, items: items.map(text => ({ id: uuid(), text, done: false })) })); return changed(b) }
   if (a === "stdRestoration") { b.restoration = RESTORATION_PLAN.flatMap(([phase, steps]) => steps.map(title => ({ id: uuid(), phase, title, done: false, notes: "" }))); return changed(b) }
   if (id("rsedit")) { e.preventDefault(); return restoSheet(b, b.restoration.find(s => s.id === id("rsedit"))) }
@@ -1618,7 +1690,7 @@ document.addEventListener("change", e => {
 });
 document.addEventListener("submit", e => {
   const b = bike(), f = e.target; if (!b) return;
-  if (f.id === "wearForm") { e.preventDefault(); const v = num($("#wVal").value); if (v == null) return; const o = num($("#wOdo").value);
+  if (f.id === "wearForm") { e.preventDefault(); const v = num($("#wVal").value); if (v == null) return; const o = numOdo($("#wOdo").value);
     (b.wear ||= []).push({ id: uuid(), date: iso(fromDateInput($("#wDate").value)), component: $("#wComp").value, value: v, ...(o != null ? { odometer: o } : {}) }); changed(b); toast("Reading saved") }
   if (f.dataset.ckadd !== undefined) { e.preventDefault(); const text = f.querySelector("input").value.trim(); if (!text) return;
     if (f.dataset.ckadd === "new") (b.checklists ||= []).push({ id: uuid(), title: text, items: [] });
@@ -1736,7 +1808,10 @@ function bookletReview(b, found) {
         return { id: uuid(), task, ...(d > 0 ? { everyDistance: d } : {}), ...(m > 0 && m <= 120 ? { everyMonths: m } : {}) };
       }).filter(Boolean);
       if (!picked.length) return;
-      if (el.querySelector("#bkReplace").checked) b.intervals = picked;
+      if (el.querySelector("#bkReplace").checked) {
+        if (b.intervals.length && !confirm(`Replace your schedule? Your ${b.intervals.length} current jobs are removed and the ${picked.length} ticked jobs from the booklet take their place.`)) return;
+        b.intervals = picked;
+      }
       else for (const iv of picked) {
         const old = b.intervals.find(x => x.task.toLowerCase() === iv.task.toLowerCase());
         if (old) { delete old.everyDistance; delete old.everyMonths; delete old.everyWeeks; Object.assign(old, { ...iv, id: old.id }) } else b.intervals.push(iv);
@@ -1747,22 +1822,48 @@ function bookletReview(b, found) {
 }
 
 // ---------- Sheets ----------
+let sheetOpener = null;
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex="0"]';
 function openSheet(html, onMount) {
-  closeSheet();
+  const opener = sheet ? sheetOpener : document.activeElement;
+  closeSheet(true);
+  sheetOpener = opener;
   sheet = document.createElement("div"); sheet.className = "scrim";
-  sheet.innerHTML = `<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;
-  sheet.addEventListener("click", e => { if (e.target === sheet || e.target.closest("[data-close]")) closeSheet() });
-  document.body.append(sheet); onMount?.(sheet.querySelector(".sheet"));
+  sheet.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" tabindex="-1">${html}</div>`;
+  let edited = false;
+  sheet.addEventListener("input", () => { edited = true });
+  const leave = () => { if (!edited || confirm("Discard your changes?")) closeSheet() };
+  sheet.addEventListener("click", e => { if (e.target === sheet || e.target.closest("[data-close]")) leave() });
+  sheet.addEventListener("keydown", e => {
+    if (e.key === "Escape") { e.preventDefault(); return leave() }
+    if (e.key !== "Tab") return;
+    const all = [...sheet.querySelectorAll(FOCUSABLE)].filter(x => x.offsetParent !== null);
+    if (!all.length) return;
+    const first = all[0], last = all[all.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+  });
+  for (const x of [document.querySelector(".wrap"), $("#tabs")]) x?.setAttribute("inert", "");
+  document.body.append(sheet);
+  const box = sheet.querySelector(".sheet");
+  onMount?.(box);
+  box.focus({ preventScroll: true });   // the dialog itself, so phones don't pop up the keyboard; Tab goes to the first field
 }
-function closeSheet() { sheet?.remove(); sheet = null }
-const head = t => `<header><h2>${esc(t)}</h2><button class="linkbtn" data-close type="button">Close</button></header>`;
+function closeSheet(keepFocus) {
+  if (!sheet) return;
+  sheet.remove(); sheet = null;
+  for (const x of [document.querySelector(".wrap"), $("#tabs")]) x?.removeAttribute("inert");
+  const back = sheetOpener; sheetOpener = null;
+  if (!keepFocus && back?.isConnected) back.focus({ preventScroll: true });
+}
+const head = t => `<header><h2 id="sheetTitle">${esc(t)}</h2><button class="linkbtn" data-close type="button">Close</button></header>`;
 
 function odoSheet(b, r) {
   openSheet(`${head("Edit reading")}<form class="form" id="eOdo">
     <label class="f">Reading (${esc(b.unit)})<input id="eVal" inputmode="decimal" value="${esc(r.value)}" required></label>
     <label class="f">Date<input id="eDate" type="date" value="${dateInput(r.date)}"></label>
     <button class="btn">Save</button><button class="btn danger" type="button" id="eDel">Delete reading</button></form>`, el => {
-    el.querySelector("#eOdo").onsubmit = e => { e.preventDefault(); const v = num(el.querySelector("#eVal").value); if (v == null) return; r.value = v; r.date = iso(fromDateInput(el.querySelector("#eDate").value, r.date)); closeSheet(); changed(b); toast("Reading updated") };
+    el.querySelector("#eOdo").onsubmit = e => { e.preventDefault(); const v = numOdo(el.querySelector("#eVal").value); if (v == null) return; r.value = v; r.date = iso(fromDateInput(el.querySelector("#eDate").value, r.date)); closeSheet(); changed(b); toast("Reading updated") };
     confirmDelete(el.querySelector("#eDel"), () => { b.odometer = b.odometer.filter(x => x.id !== r.id); closeSheet(); changed(b); toast("Reading deleted") });
   });
 }
@@ -1781,7 +1882,7 @@ function fuelSheet(b, f) {
     <button class="btn">Save</button><button class="btn danger" type="button" id="del">Delete fill</button></form>`, el => {
     el.querySelector("#eFuel").onsubmit = e => { e.preventDefault();
       const q = id => el.querySelector(id), btn = q("button.btn");
-      const input = { odo: num(q("#a").value), vol: num(q("#v").value), tot: num(q("#t").value), dateStr: q("#d").value, full: q("#full").checked, country: q("#c")?.value || fillCountry(f) };
+      const input = { odo: numOdo(q("#a").value), vol: num(q("#v").value), tot: num(q("#t").value), dateStr: q("#d").value, full: q("#full").checked, country: q("#c")?.value || fillCountry(f) };
       btn.disabled = true;
       saveFill(b.id, input, f.id).then(r => {
         if (!r) { btn.disabled = false; return }
@@ -1793,7 +1894,8 @@ function fuelSheet(b, f) {
 
 function confirmDelete(btn, run) {
   let armed = false;
-  btn.onclick = () => { if (armed) return run(); armed = true; btn.textContent = "Tap again to delete"; setTimeout(() => { armed = false; btn.textContent = btn.textContent.replace("Tap again to delete", "Delete") }, 3000) };
+  const label = btn.textContent;
+  btn.onclick = () => { if (armed) return run(); armed = true; btn.textContent = "Press again to delete"; setTimeout(() => { armed = false; btn.textContent = label }, 3000) };
 }
 
 // Tapping the icon of a due job on the overview: confirm it's done, then log it with date, odometer, cost and shop.
@@ -1809,7 +1911,7 @@ function doneSheet(b, iv) {
       <button class="btn">Add to service log</button></form>`, el2 => {
       el2.querySelector("#dnf").onsubmit = e => {
         e.preventDefault();
-        const o = num(el2.querySelector("#dno").value);
+        const o = numOdo(el2.querySelector("#dno").value);
         b.services.push({ id: uuid(), date: iso(fromDateInput(el2.querySelector("#dnd").value) || new Date()), ...(o != null ? { odometer: o } : {}),
           tasks: [iv.task], shop: el2.querySelector("#dns").value.trim(), cost: num(el2.querySelector("#dnc").value) || 0, notes: "" });
         closeSheet(); changed(b); toast(`Logged: ${iv.task}`);
@@ -1847,7 +1949,7 @@ function serviceSheet(b, existing) {
       const btn = el.querySelector("#addr"); btn.disabled = true; btn.textContent = "Uploading…";
       try { s.receipt = await uploadPhoto(file); el.querySelector("#rc").querySelector("img")?.remove();
         btn.insertAdjacentHTML("beforebegin", `<img class="receipt" data-photo="${esc(s.receipt)}" alt="Receipt">`); loadPhotos(el); btn.textContent = "Replace receipt photo" }
-      catch (err) { btn.textContent = err.message || "Upload failed" }
+      catch (err) { toast(photoError(err), 9000) }
       btn.disabled = false;
     });
     const ivFor = t => b.intervals.find(i => i.task === t);
@@ -1868,11 +1970,12 @@ function serviceSheet(b, existing) {
       s.tasks = [...p, ...custom.filter(t => !p.includes(t))];
       drawTasks(); toast(`${p.length} jobs ticked`);
     });
+    el.querySelector("#cj").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); el.querySelector("#addj").click() } });
     el.querySelector("#addj").onclick = () => { const v = el.querySelector("#cj").value.trim(); if (!v) return; if (!all.includes(v)) all.push(v); if (!s.tasks.includes(v)) s.tasks.push(v); el.querySelector("#cj").value = ""; drawTasks() };
     el.querySelector("#sv").onsubmit = e => {
       e.preventDefault();
       s.date = iso(fromDateInput(el.querySelector("#sd").value, s.date));
-      const o = num(el.querySelector("#so").value); if (o == null) delete s.odometer; else s.odometer = o;
+      const o = numOdo(el.querySelector("#so").value); if (o == null) delete s.odometer; else s.odometer = o;
       s.shop = el.querySelector("#sh").value.trim(); s.cost = num(el.querySelector("#sc").value) || 0; s.notes = el.querySelector("#sn").value;
       if (existing) Object.keys(existing).forEach(k => delete existing[k]), Object.assign(existing, s); else b.services.push(s);
       closeSheet(); changed(b); toast(existing ? "Service updated" : "Service logged");
@@ -2011,9 +2114,9 @@ function factHtml(r, f, i, showSection) {
   const vals = factValues(f), shown = shownValue(r, f);
   const tag = f.official === true ? ' <span class="rtag" style="background:#16a34a" title="From the official owner\'s manual. Websites that disagree are left out.">MANUAL</span>' : "";
   const head = `<div class="row" style="align-items:baseline"><span class="muted">${esc(f.label)}</span><span style="text-align:right">${esc(shown)}${tag}</span></div>`;
-  if (vals.length < 2) return `<div class="rfact">${head}<div class="small muted">${showSection ? esc(rTitle(f.section)) + " · " : ""}${esc(f.source)}</div></div>`;
+  if (vals.length < 2) return `<div class="rfact">${head}<div class="small muted">${showSection ? esc(rTitle(f.section)) + " · " : ""}${safeHref(f.url) ? `<a href="${esc(safeHref(f.url))}" target="_blank" rel="noopener noreferrer">${esc(f.source)}</a>` : esc(f.source)}</div></div>`;
   return `<div class="rfact">${head}<div class="small" style="color:var(--soon);margin:4px 0">Sources disagree. Tap the one you trust:</div>
-    ${vals.map((v, j) => `<button type="button" class="rpick${shown === v.value ? " on" : ""}" data-pick="${i}" data-val="${j}"><b>${esc(v.value)}</b><span class="small muted">${esc((v.sources || []).map(s => s.source).join(", "))}</span></button>`).join("")}
+    ${vals.map((v, j) => `<button type="button" class="rpick${shown === v.value ? " on" : ""}" data-pick="${i}" data-val="${j}" aria-pressed="${shown === v.value ? "true" : "false"}"><b>${esc(v.value)}</b><span class="small muted">${esc((v.sources || []).map(s => s.source).join(", "))}</span></button>`).join("")}
     ${r.picked?.[factKey(f)] != null ? '<div class="small muted">Your pick is saved. Tap it again to go back to the most common value.</div>' : ""}</div>`;
 }
 function itemHtml(it, i, showSection) {
@@ -2056,7 +2159,7 @@ function schematicsBrowse(b) {
 function schematics(b) {
   const r = b.research, name = [b.year, b.make, b.model].filter(Boolean).join(" ");
   const can = !!(String(b.make || "").trim() && String(b.model || "").trim());
-  const busy = rBusy ? '<p class="small muted">Looking up… this takes 5–20 seconds.</p>' : "", msg = rMsg ? `<p class="small" style="color:var(--over)">${esc(rMsg)}</p>` : "";
+  const busy = rBusy ? '<p class="small muted" role="status">Looking up… this takes 5–20 seconds. You can use other pages meanwhile.</p>' : "", msg = rMsg ? `<p class="small" style="color:var(--over)">${esc(rMsg)}</p>` : "";
   if (!r || !Array.isArray(r.sources) || !r.sources.length) {
     return `<section><div class="card"><h2>Schematics</h2>
       <p class="muted">Looks up ${esc(name || "this bike")} on Wikipedia, Wikimedia Commons, the RDW and US recall databases, spec sites and the web, and sorts it into specs, schematics, mods, known problems, recalls and manuals. Every line says where it came from.</p>
@@ -2070,7 +2173,7 @@ function schematics(b) {
       <div class="row" style="align-items:flex-start"><div><b>${esc(r.article ? `Matched “${r.article}”` : name)}</b><div class="small muted">Looked up ${when && !isNaN(when) ? fmtDate(r.fetchedAt) : "earlier"} · ${(r.facts || []).length} specs · ${rDiagrams(r).length} diagrams · ${(r.items || []).length} links and notes</div>
         ${disagree ? `<div class="small" style="color:var(--soon)">${disagree} where sources disagree</div>` : ""}</div>
         <button class="btn ghost small" data-act="lookup"${rBusy || !S.session ? " disabled" : ""}>Refresh</button></div>
-      <input id="rq" type="search" placeholder="Search specs, parts, problems, your log…" value="${esc(rQuery)}" autocomplete="off" style="margin-top:10px;width:100%">
+      <input id="rq" type="search" aria-label="Search this bike's research" placeholder="Search specs, parts, problems, your log…" value="${esc(rQuery)}" autocomplete="off" style="margin-top:10px;width:100%">
       <select id="ronly" aria-label="Show section" style="margin-top:8px;width:100%"><option value="all">All sections</option>${R_SECTIONS.map(([id, t]) => `<option value="${id}"${rOnly === id ? " selected" : ""}>${esc(t)}</option>`).join("")}</select>
       ${busy}${msg}</div></section>
     <div id="rresults">${rQuery.trim() ? schematicsResults(b) : schematicsBrowse(b)}</div>
@@ -2147,16 +2250,18 @@ async function api(path, { method = "GET", body, token, prefer, raw, type } = {}
   if (token) headers.Authorization = `Bearer ${token}`;
   if (prefer) headers.Prefer = prefer;
   if (raw && method === "POST") headers["x-upsert"] = "true";
-  const r = await fetch(`${SUPABASE_URL}/${path}`, { method, headers, body: raw ?? (body ? JSON.stringify(body) : undefined) });
+  let r;
+  try { r = await fetch(`${SUPABASE_URL}/${path}`, { method, headers, body: raw ?? (body ? JSON.stringify(body) : undefined) }) }
+  catch { throw Object.assign(new Error(navigator.onLine === false ? "No internet connection." : "Couldn't reach the server. Check your connection and try again."), { status: 0, offline: true }) }
   if (r.ok && method === "GET" && path.startsWith("storage/")) return r.blob();
   const text = await r.text(); let json = null; try { json = text ? JSON.parse(text) : null } catch {}
-  if (!r.ok) throw Object.assign(new Error(json?.error_description || json?.msg || json?.message || (typeof json?.error === "string" ? json.error : null) || `The server answered ${r.status}.`), { status: r.status });
+  if (!r.ok) throw Object.assign(new Error(json?.error_description || json?.msg || json?.message || (typeof json?.error === "string" ? json.error : null) || (r.status >= 500 ? "The server had a problem. Try again in a minute." : "Something went wrong. Try again.")), { status: r.status });
   return json;
 }
 // This browser's garage belongs to one account. Signing in as someone else (an invite opened on your own phone)
 // starts from an empty garage, so nobody's bikes end up in another account.
 function resetLocal() {
-  S.me = null; S.remoteAt = null; S.file = { bikes: [], deleted: [] }; S.example = false; S.dirty = false; S.lastSync = null; S.bike = null;
+  S.me = null; S.remoteAt = null; delete S.known; S.file = { bikes: [], deleted: [] }; S.example = false; S.dirty = false; S.lastSync = null; S.bike = null;
   for (const u of Object.values(photoURLs)) URL.revokeObjectURL(u);
   for (const k of Object.keys(photoURLs)) delete photoURLs[k];
 }
@@ -2169,10 +2274,27 @@ function keepSession(j) {
 }
 // Signing out also ends the session on the server, so a copied token stops working.
 // "everywhere" ends every session of the account: every phone, Mac and browser.
+// Signing out removes the garage from this browser, so changes that haven't uploaded yet are synced first,
+// and if that fails you're asked before they're thrown away.
+async function safeSignOut(everywhere) {
+  if (S.dirty && S.session) { await sync(); if (S.dirty && !confirm("Some changes haven't been uploaded yet (no connection?). Signing out removes them from this browser. Sign out anyway?")) return }
+  return signOut(everywhere);
+}
+// Deleting your own account (not the owner's): asks for the word DELETE, then the server removes everything.
+async function deleteMe() {
+  const typed = prompt("This deletes your Garagebook account, garage, photos and passkeys for good. It can't be undone.\n\nType DELETE to confirm:");
+  if (typed == null) return;
+  const note = $("#delNote");
+  if (typed.trim().toUpperCase() !== "DELETE") { if (note) note.textContent = "Nothing was deleted: type DELETE to confirm."; return }
+  try {
+    await passkeyFn("delete-me", { confirm: "DELETE" }, await freshToken());
+    S.dirty = false; await signOut(); toast("Your account was deleted", 6000);
+  } catch (err) { if (note) note.textContent = /30 minutes/.test(err.message) ? "For safety this needs a fresh sign-in: sign out, sign in with your passkey, then try again within 30 minutes." : err.message }
+}
 async function signOut(everywhere = false) {
   const s = S.session;
   if (s) { try { await api(`auth/v1/logout?scope=${everywhere ? "global" : "local"}`, { method: "POST", token: await freshToken() }) } catch {} }
-  S.session = null; S.fileOwner = null; S.me = null; S.remoteAt = null; S.file = exampleFile(); S.example = true; S.dirty = false; S.lastSync = null; lastError = null;
+  S.session = null; S.fileOwner = null; S.me = null; S.remoteAt = null; delete S.known; S.file = exampleFile(); S.example = true; S.dirty = false; S.lastSync = null; lastError = null;
   for (const u of Object.values(photoURLs)) URL.revokeObjectURL(u);
   for (const k of Object.keys(photoURLs)) delete photoURLs[k];
   persist(); closeSheet(); render(); if (everywhere) toast("Signed out on every device");
@@ -2241,7 +2363,14 @@ function handBack(j) {
 }
 
 // The example bike never goes online: the first sync starts from what's stored online.
-async function firstSync() { if (S.example) { S.file = { bikes: [], deleted: [] }; S.example = false; S.dirty = false } persist(); await sync() }
+async function firstSync() {
+  if (S.example) {
+    const mine = S.file.bikes.filter(b => !b.isExample && !(b.name === "Example bike" && b.make === "Example"));
+    S.file = { bikes: mine, deleted: [] }; S.example = false; S.dirty = mine.length > 0; S.known = {};
+    if (mine.length) toast(`Kept ${mine.length === 1 ? `"${mine[0].name}"` : `${mine.length} bikes`} you added before signing in`, 5000);
+  }
+  persist(); await sync();
+}
 const summary = f => JSON.stringify({ b: f.bikes.map(b => [b.id, b.updatedAt]).sort(), d: [...(f.deleted || [])].sort() });
 async function sync() {
   if (!cloudReady || !S.session || syncing || appLogin) return;
@@ -2259,7 +2388,7 @@ async function sync() {
     const rows = at ? await api(`rest/v1/garages?select=data,updated_at&user_id=eq.${S.session.id}`, { token }) : [];
     const remote = rows?.[0]?.data;
     S.remoteAt = rows?.[0]?.updated_at ?? null;
-    const safe = remote && clean(remote); if (safe) S.file = merge(S.file, safe);
+    const safe = remote && clean(remote); if (safe) S.file = merge(S.file, safe, S.known || entryIds(S.file));
     // An online garage this page can't read (newer or damaged) is never overwritten from here.
     if (remote && !safe) throw new Error("The online garage couldn't be read here. Nothing was changed; open the Mac app to check it.");
     if (!remote || summary(S.file) !== summary(remote) || wasDirty) {
@@ -2268,6 +2397,7 @@ async function sync() {
         body: { user_id: S.session.id, data: { bikes: S.file.bikes, deleted: S.file.deleted || [] }, updated_at: iso(new Date()) } });
       S.remoteAt = saved?.[0]?.updated_at ?? null;
     }
+    S.known = entryIds(S.file);
     S.lastSync = iso(new Date()); lastError = null;
   } catch (err) { S.dirty = S.dirty || wasDirty; lastError = err.message || "Couldn't reach the server." }
   syncing = false; persist();
@@ -2302,6 +2432,13 @@ async function shrink(file) {
     return await new Promise(ok => c.toBlob(ok, "image/jpeg", 0.85));
   } finally { URL.revokeObjectURL(url) }
 }
+// Why a photo didn't upload, in plain words.
+function photoError(err) {
+  if (err?.offline) return `Photo not uploaded. ${err.message}`;
+  if (err?.status === 400 || err?.status === 403 || err?.status === 413) return "Photo not uploaded: your photo space is full (150 MB, or 2,000 photos and receipts). Delete some photos to make room.";
+  if (err instanceof Error && err.message) return `Photo not uploaded. ${err.message}`;
+  return "That picture couldn't be read here. Try a JPEG or PNG.";
+}
 async function uploadPhoto(file) {
   if (!S.session) throw new Error("Sign in first.");
   const blob = await shrink(file), name = `${uuid()}.jpg`;
@@ -2325,7 +2462,7 @@ function photos(b) {
     ${receipts.length ? `<section><h2>Receipts</h2><div class="gallery">${receipts.map(s => `<button type="button" class="ph" data-edit-service="${esc(s.id)}"><img data-photo="${esc(s.receipt)}" alt="Receipt"><span>${fmtDate(s.date)} · ${fmtMoney(s.cost)}</span></button>`).join("")}</div></section>` : ""}`;
 }
 function photoSheet(b, p) {
-  openSheet(`${head(p.caption || p.kind)}<img data-photo="${esc(p.filename)}" alt="" class="big">
+  openSheet(`${head(p.caption || p.kind)}<img data-photo="${esc(p.filename)}" alt="${esc(p.caption || p.kind)}" class="big">
     <form class="form" id="phf"><label class="f">Caption<input id="pc" value="${esc(p.caption)}"></label>
     <label class="f">Kind<select id="pk">${PHOTO_KINDS.map(k => `<option${k === p.kind ? " selected" : ""}>${k}</option>`).join("")}</select></label>
     <button class="btn">Save</button><button class="btn danger" type="button" id="pdel">Delete photo</button></form>`, el => {
@@ -2339,30 +2476,51 @@ function photoSheet(b, p) {
 }
 async function addPhoto(b) {
   const file = await pickPhoto(); if (!file) return;
-  toast("Uploading…");
+  toast("Uploading photo…", 120000);
   try { const name = await uploadPhoto(file); b.photos.push({ id: uuid(), filename: name, caption: "", date: iso(new Date()), kind: "General" }); changed(b); toast("Photo added") }
-  catch (err) { toast(err.message || "Upload failed") }
+  catch (err) { toast(photoError(err), 9000) }
 }
 
 // ---------- Account ----------
+// Links to the legal pages, shown in the account sheet, the sign-in sheet and under the Overview.
+const LEGAL = [["privacy.html", "Privacy policy"], ["terms.html", "Terms of use"], ["cookies.html", "Cookies and storage"], ["refunds.html", "Payments and refunds"]];
+const legalLinks = () => `<ul class="legal">${LEGAL.map(([h, t]) => `<li><a href="${h}" target="_blank" rel="noopener">${t}</a></li>`).join("")}</ul>`;
+const creditsLine = () => `<p class="small muted credits">Bike drawing traced from <a href="https://commons.wikimedia.org/wiki/File:2006HondaCBR600RR-profile.png" target="_blank" rel="noopener noreferrer">a photo by Rich Niewiroski Jr.</a>, <a href="https://creativecommons.org/licenses/by/2.5/" target="_blank" rel="noopener noreferrer">CC BY 2.5</a>. ${LEGAL.map(([h, t]) => `<a href="${h}" target="_blank" rel="noopener">${t}</a>`).join(" · ")}</p>`;
 function accountSheet() {
   if (!cloudReady) { openSheet(`${head("Online sync")}<p class="muted">Online sync isn't set up yet.</p>`); return }
   if (S.session) {
-    const when = S.lastSync ? `Last synced ${new Date(S.lastSync).toLocaleTimeString(lang, { hour: "2-digit", minute: "2-digit" })}.` : "Not synced yet.";
-    openSheet(`${head("Online sync")}<div class="card form"><div class="t">Signed in${S.me?.name ? ` as ${esc(S.me.name)}` : " with your passkey"}</div>
-      <p class="small muted" style="margin:0">${when}${lastError ? ` <span style="color:var(--over)">${esc(lastError)}</span>` : ""} Changes upload a moment after you make them, and this page checks once a minute for changes from your other devices while it's open.</p>
-      <button class="btn" data-act="sync" type="button">Sync now</button>${S.me?.owner ? '<button class="btn" data-act="admin" type="button">Admin control</button>' : ""}
-      <button class="btn ghost" data-act="myName" type="button">Change my name</button>${isMacBrowser() ? '<button class="btn ghost" data-act="macApp" type="button">Garagebook for Mac</button>' : ""}<button class="btn ghost" data-act="newBike" type="button">Add bike</button>
-      <button class="btn ghost" data-act="addPasskey" type="button">Add another passkey</button><button class="btn ghost" data-act="signout" type="button">Sign out</button>
-      <button class="btn danger" data-act="signoutAll" type="button">Sign out on every device</button>
-      <p class="small muted" style="margin:0">Lost a phone or laptop? "Sign out on every device" ends Garagebook's sign-in everywhere, including the Mac app. Sign in again with your passkey afterwards.</p></div>`);
+    const at = S.lastSync ? new Date(S.lastSync) : null;
+    const when = at ? `Last synced ${at.toLocaleDateString(lang, { day: "numeric", month: "short" })} at ${at.toLocaleTimeString(lang, { hour: "2-digit", minute: "2-digit" })}.` : "Not synced yet.";
+    const state = lastError ? "Not synced" : S.dirty ? "Waiting to sync" : "Synced";
+    openSheet(`${head("Account and sync")}
+      <section class="group" aria-labelledby="gSync"><h3 id="gSync">Sync</h3><div class="card form">
+        <div class="t">${state}</div>
+        <p class="small muted" style="margin:0" role="status">${when}${lastError ? ` <span style="color:var(--over)">${esc(lastError)}</span>` : ""}</p>
+        <p class="small muted" style="margin:0">Changes upload a moment after you make them. While Garagebook is open it checks once a minute for changes from your other devices.</p>
+        <button class="btn" data-act="sync" type="button">Sync now</button></div></section>
+      <section class="group" aria-labelledby="gAcc"><h3 id="gAcc">Your account</h3><div class="card form">
+        <div class="t">Signed in${S.me?.name ? ` as ${esc(S.me.name)}` : " with your passkey"}</div>
+        <div class="btns"><button class="btn ghost" data-act="myName" type="button">Change my name</button><button class="btn ghost" data-act="addPasskey" type="button">Add a passkey on this device</button></div>
+        <p class="small muted" style="margin:0">Add a passkey here if you want to sign in with this device too, for example a second phone or laptop.</p></div></section>
+      ${S.me?.owner || isMacBrowser() ? `<section class="group" aria-labelledby="gMore"><h3 id="gMore">${S.me?.owner ? "Owner" : "Apps"}</h3><div class="card form"><div class="btns">
+        ${S.me?.owner ? '<button class="btn ghost" data-act="admin" type="button">Admin control</button>' : ""}${isMacBrowser() ? '<button class="btn ghost" data-act="macApp" type="button">Garagebook for Mac</button>' : ""}</div></div></section>` : ""}
+      <section class="group" aria-labelledby="gLegal"><h3 id="gLegal">Privacy and terms</h3><div class="card">${legalLinks()}</div></section>
+      <section class="group" aria-labelledby="gOut"><h3 id="gOut">Sign out</h3><div class="card form">
+        <div class="btns"><button class="btn ghost" data-act="signout" type="button">Sign out of this browser</button></div>
+        <button class="btn danger" data-act="signoutAll" type="button">Sign out on every device</button>
+        <p class="small muted" style="margin:0">Lost a phone or laptop? This ends Garagebook's sign-in everywhere, including the Mac app. Sign in again with your passkey afterwards.</p></div></section>
+      ${S.me && !S.me.owner ? `<section class="group" aria-labelledby="gDel"><h3 id="gDel">Delete account</h3><div class="card form">
+        <p class="small muted" style="margin:0">Deletes your account, garage, photos and passkeys from Garagebook for good. Export a history report first if you want to keep anything. Bikes saved on your own devices stay there.</p>
+        <button class="btn danger" data-act="deleteMe" type="button">Delete my account…</button><p class="small" id="delNote" style="margin:0" role="status"></p></div></section>` : ""}`);
     return;
   }
   openSheet(`${head("Sign in")}<div class="card form">
-    <p class="muted" style="margin:0">Garagebook signs in with a passkey: no password. Got an invite link? Open that link to make your passkey.</p>
+    <p class="muted" style="margin:0">Garagebook is invite-only and signs in with a passkey: no password. New here? Open the invite link you were sent to make your passkey.</p>
     <button class="btn" type="button" id="pkIn">Sign in with passkey</button>
-    <button class="btn ghost" type="button" id="pkNew">Create passkey (first time)</button>
-    <p class="small muted" id="aNote" style="margin:0"></p></div>`, el => {
+    <p class="small muted" id="aNote" style="margin:0" role="status"></p></div>
+    <div class="card">${legalLinks()}</div>
+    <details class="small muted"><summary>Owner: first-time setup</summary><p style="margin:8px 0">Only for the owner setting up Garagebook for the first time. It asks for the setup code from Supabase.</p>
+    <button class="btn ghost" type="button" id="pkNew">Set up the owner's passkey</button></details>`, el => {
     const note = el.querySelector("#aNote"), btns = el.querySelectorAll("button.btn");
     const go = async (work, label) => {
       btns.forEach(b => b.disabled = true); note.textContent = label;
@@ -2378,7 +2536,7 @@ async function addPasskey() {
 }
 function appLoginScreen() {
   document.querySelector(".top").hidden = true; $("#tabs").hidden = true;
-  $("#view").innerHTML = `<section style="margin-top:12vh"><div class="card form"><h2>Sign in the Mac app</h2>
+  $("#view").innerHTML = `<section style="margin-top:12vh"><div class="card form"><h2>Sign in to the Mac app</h2>
     <p class="muted" style="margin:0">This gives the Garagebook app on this Mac access to your online garage. Only continue if you just pressed <b>Sign in with passkey</b> in Garagebook on your Mac.</p>
     <button class="btn" type="button" id="macIn">Sign in with passkey</button><p class="small muted" id="macNote" style="margin:0"></p></div></section>`;
   $("#macIn").onclick = async () => {
@@ -2464,7 +2622,8 @@ function linkScreen() {
     <p class="muted" style="margin:0">${j ? "Garagebook keeps your motorcycle's service, fuel and papers. You sign in with a passkey: no password." : "This gives your Garagebook account a new passkey. Your garage stays as it is."}</p>
     ${j ? '<label class="f">Your name<input id="lkName" maxlength="30" required autocomplete="nickname"></label>' : ""}
     <p class="small muted" style="margin:0">${esc(deviceHint())}</p>
-    <button class="btn" type="submit">Make my passkey</button><p class="small muted" id="lkNote" style="margin:0"></p></form></section>`;
+    <p class="small muted" style="margin:0">${j ? "Your name is shown to the owner. " : ""}By making a passkey you accept the <a href="terms.html" target="_blank" rel="noopener">terms of use</a>. Read what is stored in the <a href="privacy.html" target="_blank" rel="noopener">privacy policy</a>.</p>
+    <button class="btn" type="submit">Make my passkey</button><p class="small muted" id="lkNote" style="margin:0" role="status"></p></form></section>`;
   $("#lk").onsubmit = async e => {
     e.preventDefault();
     const note = $("#lkNote"), btn = $("#lk button"); btn.disabled = true; note.textContent = "Making your passkey…";
@@ -2500,9 +2659,9 @@ async function adminSheet(flash) {
         <div class="small muted">Since ${esc(fmtWhen(a.created_at))} · last seen ${esc(fmtWhen(a.last_seen))}<br>Garage ${esc(fmtBytes(Number(a.garage_bytes) || 0))} · photos ${esc(fmtBytes(Number(a.photo_bytes) || 0))} of 150 MB · ${Number(a.searches_week) || 0}${a.role === "owner" ? "" : ` of ${o.personSearches || 15}`} part searches this week</div></div>
         ${a.role === "owner" ? "" : `<div class="btns" style="margin:0"><button class="btn ghost small" type="button" data-ad="rename" data-u="${esc(a.user_id)}">Rename</button>
           <button class="btn ghost small" type="button" data-ad="${a.blocked ? "unblock" : "block"}" data-u="${esc(a.user_id)}">${a.blocked ? "Unblock" : "Block"}</button>
-          <button class="btn ghost small" type="button" data-ad="recover" data-u="${esc(a.user_id)}">Recovery link</button>
+          ${a.blocked ? "" : `<button class="btn ghost small" type="button" data-ad="recover" data-u="${esc(a.user_id)}">Recovery link</button>`}
           <button class="btn danger small" type="button" data-ad="delete" data-u="${esc(a.user_id)}">Delete</button></div>`}</div>`).join("")}
-      <button class="btn" type="button" data-ad="invite"${members + open >= max ? " disabled" : ""}>New invite link</button>
+      <button class="btn" type="button" data-ad="invite"${members + open >= max ? " disabled" : ""}>New invite link</button>${members + open >= max ? `<p class="small muted" style="margin:0">All ${max} places are taken or have an open invite. Cancel an invite or delete an account to invite someone else.</p>` : ""}
       <p class="small muted" style="margin:0">Each invited person gets 150 MB for photos and ${o.personSearches || 15} part searches a week. You never see their garage.</p></div>
     ${invs.length ? `<div class="card form"><div class="t">Open links</div>${invs.map(i => `<div class="row"><span>${i.kind === "join" ? "Invite" : `Recovery for ${esc(nameOf(i.for_user))}`}<br><span class="small muted">until ${esc(new Date(i.expires_at).toLocaleString(lang, { weekday: "short", hour: "2-digit", minute: "2-digit" }))}</span></span>
       <button class="btn ghost small" type="button" data-ad="cancel" data-i="${esc(i.id)}">Cancel</button></div>`).join("")}</div>` : ""}
@@ -2522,7 +2681,7 @@ async function adminSheet(flash) {
         if (act === "rename") { const name = prompt("New name (up to 30 characters):", who?.name || ""); if (!name) return; await adminCall("admin-rename", { user, name }) }
         if (act === "delete") {
           const typed = prompt(`This deletes ${who?.name}'s account, garage and photos for good. Type their name to confirm:`);
-          if (typed == null) return; await adminCall("admin-delete", { user, confirm: typed }); toast("Account deleted");
+          if (typed == null) return; const same = typed.trim().toLowerCase() === String(who?.name || "").toLowerCase(); if (!same) { note.textContent = `That doesn't match "${who?.name}". Nothing was deleted.`; btn.disabled = false; return } await adminCall("admin-delete", { user, confirm: who.name }); toast("Account deleted");
         }
         adminSheet();
       } catch (err) { note.textContent = passkeyMessage(err); btn.disabled = false }
@@ -2545,7 +2704,7 @@ function bikeSheet(edit) {
     el.querySelector("#bk").onsubmit = e => {
       e.preventDefault();
       const q = id => el.querySelector(id).value.trim();
-      const yr = parseInt(q("#by")), bd = q("#bd"), bp = num(q("#bp")), bpo = num(q("#bpo"));
+      const yr = parseInt(q("#by")), bd = q("#bd"), bp = num(q("#bp")), bpo = numOdo(q("#bpo"));
       const info = { name: q("#bn"), make: q("#bmk"), model: q("#bmd"), plate: q("#bpl"), vin: q("#bvin") };
       if (!info.name) return;
       if (edit) {
@@ -2618,8 +2777,8 @@ function widgetBody(b, kind) {
     case "photos": return tile("Photos", fmtNum(b.photos.length));
     case "nextJob": return tile("Next job", next ? `<span style="font-size:22px">${esc(next.title)}</span>` : "—", next ? esc(next.detail) : "Nothing scheduled");
     case "upcoming": return `<h3>Upcoming maintenance</h3><div class="jobs">${up.map(jobRow).join("") || '<p class="muted">No schedule yet. Read your service booklet under Service.</p>'}</div>`;
-    case "logOdometer": return `<h3>Log odometer</h3><p class="small muted" style="margin:0">${b.odometer.length} readings. Last: ${fmtNum(currentOdo(b))} ${esc(b.unit)}.</p><div class="btns"><button class="btn" type="button" data-go="log">Log odometer</button></div>`;
-    case "logFuel": return `<h3>Log fuel</h3><p class="small muted" style="margin:0">${b.fuel.length} fills logged.</p><div class="btns"><button class="btn" type="button" data-go="log">Log fuel</button></div>`;
+    case "logOdometer": return `<h3>Log odometer</h3><p class="small muted" style="margin:0">${b.odometer.length} readings. Last: ${fmtNum(currentOdo(b))} ${esc(b.unit)}.</p><div class="btns"><button class="btn ghost" type="button" data-go="log">Log odometer</button></div>`;
+    case "logFuel": return `<h3>Log fuel</h3><p class="small muted" style="margin:0">${b.fuel.length} fills logged.</p><div class="btns"><button class="btn ghost" type="button" data-go="log">Log fuel</button></div>`;
     case "chart": return `<h3>Odometer over time</h3>${odoChart(b)}`;
     case "history": {
       const bought = purchaseReading(b);
@@ -2638,7 +2797,7 @@ function deskOverview(b) {
   const controls = c => `<div class="wctl"><span class="small muted">${esc(WIDGETS[c.kind][0])}</span><span>
     <button type="button" class="linkbtn" data-wmove="left" data-wid="${esc(key(c))}" aria-label="Move ${esc(WIDGETS[c.kind][0])} back">←</button>
     <button type="button" class="linkbtn" data-wmove="right" data-wid="${esc(key(c))}" aria-label="Move ${esc(WIDGETS[c.kind][0])} forward">→</button>
-    <button type="button" class="linkbtn" data-wmove="size" data-wid="${esc(key(c))}">${SIZE_NAME[c.size]}</button>
+    <button type="button" class="linkbtn" data-wmove="size" data-wid="${esc(key(c))}" aria-label="Size of ${esc(WIDGETS[c.kind][0])}: ${SIZE_NAME[c.size]}. Change size">Size: ${SIZE_NAME[c.size]}</button>
     <button type="button" class="linkbtn" data-wmove="remove" data-wid="${esc(key(c))}" aria-label="Remove ${esc(WIDGETS[c.kind][0])}" style="color:var(--over)">Remove</button></span></div>`;
   return `<section class="dashhead"><h2>${esc(b.name)}</h2><div class="btns">${arranging
     ? `<select id="wAdd" aria-label="Add widget"${missing.length ? "" : " disabled"}><option value="">Add widget…</option>${missing.map(k => `<option value="${k}">${esc(WIDGETS[k][0])}</option>`).join("")}</select>
@@ -2652,9 +2811,9 @@ function deskOverview(b) {
       <svg class="bikeart" viewBox="0 0 2518 1478" role="img" aria-label="Side view of a sport bike"><use href="#bikeArt"/></svg>
       <div class="grid2"><button class="btn" data-act="newService">Log a service</button><button class="btn ghost" data-go="log">Log odometer or fuel</button></div>
     </div></section>`}
-  <section><div class="dash${arranging ? " arranging" : ""}">${cards.map(c => `<div class="card widget${c.kind === "odometer" ? " dark" : ""}" style="grid-column:span ${SPAN[c.size]}"${arranging ? ` draggable="true" data-wdrag="${esc(key(c))}"` : ""}>${arranging ? controls(c) : ""}${widgetBody(b, c.kind)}</div>`).join("")}</div>
+  <section><div class="dash${arranging ? " arranging" : ""}">${cards.map(c => `<div class="card widget${c.kind === "odometer" ? " dark" : ""}" style="grid-column:span ${SPAN[c.size]}"${arranging ? ` draggable="true" data-wdrag="${esc(key(c))}"` : ""}>${arranging ? controls(c) : ""}${arranging ? `<div inert>${widgetBody(b, c.kind)}</div>` : widgetBody(b, c.kind)}</div>`).join("")}</div>
   ${cards.length ? "" : '<div class="card"><p class="muted">No widgets. Add some with Edit widgets, or reset the layout.</p></div>'}</section>
-  <p class="small muted" style="margin:18px 0 0">Bike silhouette traced from a photo on Wikimedia Commons, CC BY 2.5.</p>`;
+  ${creditsLine()}`;
 }
 let dragWidget = null;
 document.addEventListener("dragstart", e => { const w = e.target.closest?.("[data-wdrag]"); if (w) { dragWidget = w.dataset.wdrag; e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", dragWidget) } });
@@ -2663,7 +2822,7 @@ document.addEventListener("drop", e => { const w = e.target.closest?.("[data-wdr
 document.addEventListener("dragend", () => { dragWidget = null });
 
 // ---------- Events ----------
-$("#bike").addEventListener("change", e => { S.bike = e.target.value; persist(); render() });
+$("#bike").addEventListener("change", e => { if (e.target.value === "__new") { e.target.value = bike()?.id ?? ""; return bikeSheet() } S.bike = e.target.value; persist(); render() });
 $("#syncChip").addEventListener("click", accountSheet);
 $("#tabs").addEventListener("click", e => { const t = e.target.closest("button")?.dataset.tab; if (t) { S.tab = t; persist(); render(); scrollTo(0, 0) } });
 document.addEventListener("change", e => {
@@ -2672,13 +2831,17 @@ document.addEventListener("change", e => {
   if (t.id === "wGuess") { const n = num(t.value); if (n != null && n > 0 && n < 100000) b.guessedWeekly = n; else delete b.guessedWeekly; return changed(b) }
   if (t.id === "wAdd" && t.value) { const k = t.value; if (WIDGETS[k]) { b.dashboard = [...dashCards(b), { id: uuid(), kind: k, size: WIDGETS[k][1] }]; changed(b) } }
 });
+document.addEventListener("keydown", e => {
+  if ((e.key === "Enter" || e.key === " ") && e.target.matches?.(".row.tap[role=button]")) { e.preventDefault(); e.target.click() }
+});
 document.addEventListener("click", e => {
   const b = bike(), a = e.target.closest("[data-act]")?.dataset.act, go = e.target.closest("[data-go]")?.dataset.go;
   if (go) { S.tab = go; persist(); render(); scrollTo(0, 0); return }
   if (a === "account") return accountSheet();
   if (a === "sync") return sync();
-  if (a === "signout") return signOut();
-  if (a === "signoutAll") { if (confirm("Sign out of Garagebook on every device, including the Mac app?")) return signOut(true); return }
+  if (a === "signout") return safeSignOut(false);
+  if (a === "deleteMe") return deleteMe();
+  if (a === "signoutAll") { if (confirm("Sign out of Garagebook on every device, including the Mac app?")) return safeSignOut(true); return }
   if (a === "newBike") return bikeSheet();
   if (a === "editBike") return b && bikeSheet(b);
   if (a === "editWidgets") { arranging = true; return render() }
@@ -2692,7 +2855,7 @@ document.addEventListener("click", e => {
   if (a === "macApp") return macSheet();
   if (a === "macDownload") return downloadMac();
   if (a === "locate") return useLocation();
-  const dn = e.target.closest("[data-done]")?.dataset.done; if (dn) return doneSheet(b, b.intervals.find(i => i.id === dn));
+  const dnEl = e.target.closest("[data-done]"); if (dnEl) { const ob = bikes().find(x => x.id === dnEl.dataset.doneBike) || b; return doneSheet(ob, ob.intervals.find(i => i.id === dnEl.dataset.done)) }
   const ph = e.target.closest("[data-photo-id]")?.dataset.photoId; if (ph) return photoSheet(b, b.photos.find(x => x.id === ph));
   if (a === "newService") return serviceSheet(b);
   if (a === "newPaper") return paperSheet(b);
@@ -2703,11 +2866,11 @@ document.addEventListener("click", e => {
 });
 document.addEventListener("submit", e => {
   const b = bike();
-  if (e.target.id === "odoForm") { e.preventDefault(); const v = num($("#odoVal").value); if (v == null) return; clearDraft("odoForm");
+  if (e.target.id === "odoForm") { e.preventDefault(); const v = numOdo($("#odoVal").value); if (v == null) return; clearDraft("odoForm");
     b.odometer.push({ id: uuid(), date: iso(fromDateInput($("#odoDate").value)), value: v }); changed(b); toast(`Saved ${fmtNum(v)} ${esc(b.unit)}`) }
   if (e.target.id === "fuelForm") { e.preventDefault();
     const sel = $("#fCountry"), country = sel && !sel.dataset.auto ? sel.value : null;   // null: where this phone is
-    const input = { odo: num($("#fOdo").value), vol: num($("#fVol").value), tot: num($("#fTot").value), dateStr: $("#fDate").value, full: $("#fFull").checked, country, shown: sel?.value };
+    const input = { odo: numOdo($("#fOdo").value), vol: num($("#fVol").value), tot: num($("#fTot").value), dateStr: $("#fDate").value, full: $("#fFull").checked, country, shown: sel?.value };
     const btn = e.target.querySelector("button.btn"); if (btn) btn.disabled = true;
     saveFill(b.id, input, null).then(r => {
       if (!r) { if (btn?.isConnected) btn.disabled = false; return }

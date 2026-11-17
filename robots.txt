@@ -1,0 +1,4 @@
+# Garagebook is invite-only; the app page and the legal pages may be indexed, nothing else is here.
+User-agent: *
+Allow: /garagebook/
+Sitemap: https://vulpeslag0pus.github.io/garagebook/sitemap.xml
