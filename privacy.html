@@ -27,7 +27,7 @@
 </header>
 <main id="main">
 <h1>Privacy policy</h1>
-<p class="muted">Last updated 17 November 2026</p>
+<p class="muted">Last updated 18 November 2026</p>
 <p>Garagebook is run by one private person, called <b>the owner</b> on these pages: the person who invited you. It is a free hobby project for the owner and up to five invited riders. It is not a business, has no customers and does not make money.</p>
 <p><b>Contact:</b> ask the owner directly, the same way you received your invite link. The owner can also see your account in Garagebook's Admin control. This site has no public contact address, because Garagebook is only for invited riders.</p>
 <div class="box"><b>In short.</b> Garagebook stores only what you type into it, plus what is needed to sign you in. There are no ads, no analytics, no tracking and no cookies. Your data is not sold or shared for marketing. The database is in the European Union.</div>
@@ -37,7 +37,8 @@
 <thead><tr><th scope="col">What</th><th scope="col">Why</th><th scope="col">Where</th></tr></thead>
 <tbody>
 <tr><td><b>Your account:</b> a random account number, the name you chose (up to 30 characters), whether you are the owner or invited, whether the account is blocked, when it was made and when you were last seen.</td><td>To sign you in, show your name to the owner, and enforce the limits below.</td><td>Database (EU)</td></tr>
-<tr><td><b>Your passkey:</b> its public key, its id, a counter and the kind of connection (for example USB or internal). The private key never leaves your device.</td><td>To check it is you when you sign in. There are no passwords.</td><td>Database (EU)</td></tr>
+<tr><td><b>Your passkey:</b> its public key, its id, a counter and the kind of connection (for example USB or internal). The private key never leaves your device.</td><td>To check it is you when you sign in.</td><td>Database (EU)</td></tr>
+<tr><td><b>Your password, only if you chose one</b> instead of a passkey: your sign-in name, and a one-way fingerprint of the password (PBKDF2-SHA256, 600,000 rounds, a random salt per person, mixed with a server-only secret), plus a count of wrong tries. The password itself is never stored, logged or readable, also not by the owner.</td><td>To check it is you when you sign in, and to stop people guessing.</td><td>Database (EU)</td></tr>
 <tr><td><b>Your garage:</b> everything you enter, such as bikes (name, make, model, year, plate, VIN, purchase date and price), odometer readings, fuel fills, services (including shop, costs and notes), papers and insurance (including provider and number if you type them), mods, wear readings, checklists, restoration steps, the parts list and the story.</td><td>This is the service: keeping your bike records and showing what is due.</td><td>Database (EU) and on your device</td></tr>
 <tr><td><b>Photos and receipts</b> you add (up to 150 MB per account).</td><td>To show them with your bike.</td><td>File storage (EU)</td></tr>
 <tr><td><b>Part searches:</b> your account number, the time and the cost of each search.</td><td>To keep everyone within the weekly and monthly search limits. Deleted automatically after 32 days.</td><td>Database (EU)</td></tr>
@@ -76,7 +77,7 @@
 
 <h2>How long data is kept</h2>
 <ul>
-<li>Your garage, photos and passkeys: until you delete your account (Account and sync › Delete account) or the owner does. That removes your account, garage, photos and passkeys straight away.</li>
+<li>Your garage, photos, passkeys and password fingerprint: until you delete your account (Account and sync › Delete account) or the owner does. That removes your account, garage, photos, passkeys and password straight away.</li>
 <li>Part search records: 32 days. Invite links: until they expire or are used, plus a short time for the owner's overview.</li>
 <li>Our providers' logs and backups may keep copies for a limited time under their own rules.</li>
 <li>Data on your device stays until you sign out, clear the site's data, or remove the Mac app and its data. The Mac app keeps your garage on your Mac, also when you don't use online sync.</li>
@@ -86,7 +87,7 @@
 <p>You can ask the owner to see, correct, export or delete your data, or object to how it is used. Much of it you can do yourself: edit anything in the app, export a history report or calendar, and delete your own account under Account and sync › Delete account. You may also complain to the Dutch data protection authority, the <a href="https://www.autoriteitpersoonsgegevens.nl/">Autoriteit Persoonsgegevens</a>, or to the authority in your own EU country.</p>
 
 <h2>Security</h2>
-<p>Sign-in uses passkeys. The database only lets each account read and change its own garage. Connections use HTTPS. No system is perfectly safe; if something goes wrong that affects your data, the owner will tell you.</p>
+<p>Sign-in uses passkeys, or a password for riders whose device can't use one: it travels only over HTTPS and is stored only as a salted one-way fingerprint, and after 5 wrong tries the sign-in locks for a while. The database only lets each account read and change its own garage. Connections use HTTPS. No system is perfectly safe; if something goes wrong that affects your data, the owner will tell you.</p>
 
 <h2>Children</h2>
 <p>Garagebook is not meant for anyone under 16.</p>

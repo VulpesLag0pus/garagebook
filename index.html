@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-XB4pFsDhx6VJtlIDyhRBLry0czaWSzvaLmrd70uAsBM='; style-src 'unsafe-inline'; font-src 'self'; img-src 'self' blob: data: https:; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co https://opendata.cbs.nl https://ec.europa.eu; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'sha256-Luj89FTlrVbnx/KjxA/VSKhL7Pxwd6CyZNhkuLzbO34='; style-src 'unsafe-inline'; font-src 'self'; img-src 'self' blob: data: https:; connect-src https://gnroryugxfcqgwrbhkmn.supabase.co https://opendata.cbs.nl https://ec.europa.eu; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -2289,7 +2289,7 @@ async function deleteMe() {
   try {
     await passkeyFn("delete-me", { confirm: "DELETE" }, await freshToken());
     S.dirty = false; await signOut(); toast("Your account was deleted", 6000);
-  } catch (err) { if (note) note.textContent = /30 minutes/.test(err.message) ? "For safety this needs a fresh sign-in: sign out, sign in with your passkey, then try again within 30 minutes." : err.message }
+  } catch (err) { if (note) note.textContent = /30 minutes/.test(err.message) ? "For safety this needs a fresh sign-in: sign out, sign in again, then try again within 30 minutes." : err.message }
 }
 async function signOut(everywhere = false) {
   const s = S.session;
@@ -2310,7 +2310,7 @@ async function freshToken() {
     try { keepSession(await api("auth/v1/token?grant_type=refresh_token", { method: "POST", body: { refresh_token: s.refresh } })); persist(); return S.session.access }
     catch (err) {
       // Only a refused token signs out; being offline just tries again later.
-      if (err.status === 400 || err.status === 401 || err.status === 403) { S.session = null; persist(); throw new Error("Signed out. Sign in with your passkey again to keep syncing.") }
+      if (err.status === 400 || err.status === 401 || err.status === 403) { S.session = null; persist(); throw new Error("Signed out. Sign in again to keep syncing.") }
       throw err;
     } finally { refreshing = null }
   })();
@@ -2499,46 +2499,106 @@ function accountSheet() {
         <p class="small muted" style="margin:0">Changes upload a moment after you make them. While Garagebook is open it checks once a minute for changes from your other devices.</p>
         <button class="btn" data-act="sync" type="button">Sync now</button></div></section>
       <section class="group" aria-labelledby="gAcc"><h3 id="gAcc">Your account</h3><div class="card form">
-        <div class="t">Signed in${S.me?.name ? ` as ${esc(S.me.name)}` : " with your passkey"}</div>
+        <div class="t">Signed in${S.me?.name ? ` as ${esc(S.me.name)}` : ""}</div>
         <div class="btns"><button class="btn ghost" data-act="myName" type="button">Change my name</button><button class="btn ghost" data-act="addPasskey" type="button">Add a passkey on this device</button></div>
-        <p class="small muted" style="margin:0">Add a passkey here if you want to sign in with this device too, for example a second phone or laptop.</p></div></section>
+        <p class="small muted" style="margin:0">Add a passkey here if you want to sign in with this device too, for example a second phone or laptop.</p>
+        ${S.me && !S.me.owner && (S.me.passwordsOn || S.me.passwordLogin) ? `<div class="t" style="margin-top:6px">Password</div>
+        <p class="small muted" style="margin:0">${S.me.passwordLogin ? `You can also sign in with the sign-in name <b>${esc(S.me.passwordLogin)}</b> and your password.` : "For a phone or computer that can't use a passkey. Choose a sign-in name and a password."}</p>
+        <div class="btns"><button class="btn ghost" data-act="password" type="button">${S.me.passwordLogin ? "Change password" : "Set up a password"}</button>${S.me.passwordLogin ? '<button class="btn ghost" data-act="passwordRemove" type="button">Remove password</button>' : ""}</div>` : ""}</div></section>
       ${S.me?.owner || isMacBrowser() ? `<section class="group" aria-labelledby="gMore"><h3 id="gMore">${S.me?.owner ? "Owner" : "Apps"}</h3><div class="card form"><div class="btns">
         ${S.me?.owner ? '<button class="btn ghost" data-act="admin" type="button">Admin control</button>' : ""}${isMacBrowser() ? '<button class="btn ghost" data-act="macApp" type="button">Garagebook for Mac</button>' : ""}</div></div></section>` : ""}
       <section class="group" aria-labelledby="gLegal"><h3 id="gLegal">Privacy and terms</h3><div class="card">${legalLinks()}</div></section>
       <section class="group" aria-labelledby="gOut"><h3 id="gOut">Sign out</h3><div class="card form">
         <div class="btns"><button class="btn ghost" data-act="signout" type="button">Sign out of this browser</button></div>
         <button class="btn danger" data-act="signoutAll" type="button">Sign out on every device</button>
-        <p class="small muted" style="margin:0">Lost a phone or laptop? This ends Garagebook's sign-in everywhere, including the Mac app. Sign in again with your passkey afterwards.</p></div></section>
+        <p class="small muted" style="margin:0">Lost a phone or laptop? This ends Garagebook's sign-in everywhere, including the Mac app. Sign in again afterwards.</p></div></section>
       ${S.me && !S.me.owner ? `<section class="group" aria-labelledby="gDel"><h3 id="gDel">Delete account</h3><div class="card form">
         <p class="small muted" style="margin:0">Deletes your account, garage, photos and passkeys from Garagebook for good. Export a history report first if you want to keep anything. Bikes saved on your own devices stay there.</p>
         <button class="btn danger" data-act="deleteMe" type="button">Delete my account…</button><p class="small" id="delNote" style="margin:0" role="status"></p></div></section>` : ""}`);
     return;
   }
   openSheet(`${head("Sign in")}<div class="card form">
-    <p class="muted" style="margin:0">Garagebook is invite-only and signs in with a passkey: no password. New here? Open the invite link you were sent to make your passkey.</p>
+    <p class="muted" style="margin:0">Garagebook is invite-only. New here? Open the invite link you were sent.</p>
     <button class="btn" type="button" id="pkIn">Sign in with passkey</button>
     <p class="small muted" id="aNote" style="margin:0" role="status"></p></div>
+    <form class="card form" id="pwIn" method="post" autocomplete="on"><h3 style="margin:0">Or with a password</h3>
+    <p class="small muted" style="margin:0">If you chose a password instead of a passkey.</p>
+    ${pwFields(false)}<button class="btn ghost" type="submit">Sign in with password</button><p class="small muted" id="pwNote" style="margin:0" role="status"></p></form>
     <div class="card">${legalLinks()}</div>
     <details class="small muted"><summary>Owner: first-time setup</summary><p style="margin:8px 0">Only for the owner setting up Garagebook for the first time. It asks for the setup code from Supabase.</p>
     <button class="btn ghost" type="button" id="pkNew">Set up the owner's passkey</button></details>`, el => {
     const note = el.querySelector("#aNote"), btns = el.querySelectorAll("button.btn");
-    const go = async (work, label) => {
-      btns.forEach(b => b.disabled = true); note.textContent = label;
-      try { keepSession(await work()); await firstSync(); await loadMe(); closeSheet(); toast("Signed in"); offerMac() } catch (err) { note.textContent = passkeyMessage(err) }
+    const go = async (work, label, out = note) => {
+      btns.forEach(b => b.disabled = true); note.textContent = ""; out.textContent = label;
+      try { keepSession(await work()); await firstSync(); await loadMe(); closeSheet(); toast("Signed in"); offerMac() } catch (err) { out.textContent = passkeyMessage(err) }
       btns.forEach(b => b.disabled = false);
     };
     el.querySelector("#pkIn").onclick = () => go(passkeySignIn, "Waiting for your passkey…");
+    const pf = el.querySelector("#pwIn"); pwWire(pf);
+    pf.onsubmit = e => { e.preventDefault(); go(() => passwordSignIn(pf), "Checking…", el.querySelector("#pwNote")) };
     el.querySelector("#pkNew").onclick = () => go(passkeyCreate, "Creating your passkey…");
   });
 }
 async function addPasskey() {
   try { await passkeyCreate(); toast("Passkey added") } catch (err) { toast(passkeyMessage(err)) }
 }
+// ---------- Passwords: for invited riders whose phone can't make a passkey ----------
+// The password goes only to Garagebook's own server function, over HTTPS, and is never kept in this page's storage,
+// in the address bar or in messages. The server keeps a salted one-way fingerprint, never the password.
+// Real <form>s with autocomplete names, so phone password managers offer to save and fill them.
+function pwFields(isNew, login = "", loginOptional = false) {
+  return `<label class="f">Sign-in name<input name="username" class="pwLogin" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false"
+      maxlength="30" pattern="[A-Za-z0-9._\\-]{3,30}" title="3 to 30 letters, numbers, dots, dashes or underscores" value="${esc(login)}"${loginOptional ? "" : " required"}></label>
+    <label class="f">${isNew ? "New password" : "Password"}<input name="${isNew ? "new-password" : "password"}" class="pwPass" type="password"
+      autocomplete="${isNew ? "new-password" : "current-password"}"${isNew ? ' minlength="10" aria-describedby="pwRule"' : ""} maxlength="128" required></label>
+    ${isNew ? '<p class="small muted" id="pwRule" style="margin:0">At least 10 characters. A few words in a row is easy to remember and hard to guess.</p>' : ""}
+    <label class="small" style="display:flex;gap:8px;align-items:center"><input type="checkbox" class="pwShow"> Show password</label>`;
+}
+function pwWire(f) {
+  f.querySelector(".pwShow").onchange = e => f.querySelectorAll(".pwPass").forEach(i => i.type = e.target.checked ? "text" : "password");
+}
+const pwValues = f => ({ login: f.querySelector(".pwLogin")?.value.trim() || undefined, password: f.querySelector(".pwPass").value });
+const pwClear = f => f.querySelectorAll('input[type="password"], .pwPass, .pwCur').forEach(i => i.value = "");
+async function passwordSignIn(f, codeChallenge) {
+  try { return await passkeyFn("password-login", { ...pwValues(f), ...(codeChallenge ? { codeChallenge } : {}) }) }
+  finally { pwClear(f) }
+}
+function passwordSheet(remove = false) {
+  const has = !!S.me?.passwordLogin;
+  openSheet(`${head(remove ? "Remove password" : has ? "Change password" : "Set up a password")}<form class="form" id="pwSet" method="post" autocomplete="on">
+    ${remove ? '<p class="muted" style="margin:0">After this you sign in with your passkey only.</p>' : '<p class="small muted" style="margin:0">Your password is sent only to Garagebook, encrypted (HTTPS), and stored as a one-way fingerprint that nobody can turn back into your password. Changing it signs out your other devices.</p>'}
+    ${has ? `${remove ? `<input type="text" name="username" autocomplete="username" value="${esc(S.me.passwordLogin)}" hidden>` : ""}
+      <label class="f">Current password<input class="pwCur" type="password" autocomplete="current-password" maxlength="128" required></label>` : ""}
+    ${remove ? "" : pwFields(true, S.me?.passwordLogin || "")}
+    <button class="btn${remove ? " danger" : ""}" type="submit">${remove ? "Remove password" : "Save password"}</button><p class="small" id="pwSetNote" style="margin:0" role="status"></p></form>`, el => {
+    const f = el.querySelector("#pwSet"); if (!remove) pwWire(f);
+    f.onsubmit = async e => {
+      e.preventDefault(); const note = el.querySelector("#pwSetNote"), btn = f.querySelector("button[type=submit]"); btn.disabled = true; note.textContent = "Saving…";
+      const current = f.querySelector(".pwCur")?.value, values = remove ? {} : pwValues(f);
+      pwClear(f);
+      try {
+        if (remove) await passkeyFn("password-remove", { current }, await freshToken());
+        else { keepSession(await passkeyFn("password-set", { ...values, ...(has ? { current } : {}) }, await freshToken())); persist() }
+        await loadMe(); closeSheet(); toast(remove ? "Password removed" : "Password saved. Your other devices are signed out.", 5000);
+      } catch (err) {
+        note.textContent = /10 minutes/.test(err.message) ? "For safety this needs a fresh sign-in: sign out, sign in again, then do this within 10 minutes." : passkeyMessage(err);
+        btn.disabled = false;
+      }
+    };
+  });
+}
 function appLoginScreen() {
   document.querySelector(".top").hidden = true; $("#tabs").hidden = true;
   $("#view").innerHTML = `<section style="margin-top:12vh"><div class="card form"><h2>Sign in to the Mac app</h2>
     <p class="muted" style="margin:0">This gives the Garagebook app on this Mac access to your online garage. Only continue if you just pressed <b>Sign in with passkey</b> in Garagebook on your Mac.</p>
-    <button class="btn" type="button" id="macIn">Sign in with passkey</button><p class="small muted" id="macNote" style="margin:0"></p></div></section>`;
+    <button class="btn" type="button" id="macIn">Sign in with passkey</button><p class="small muted" id="macNote" style="margin:0" role="status"></p></div>
+    <form class="card form" id="macPw" method="post" autocomplete="on"><h3 style="margin:0">Or with a password</h3>${pwFields(false)}
+    <button class="btn ghost" type="submit">Sign in with password</button><p class="small muted" id="macPwNote" style="margin:0" role="status"></p></form></section>`;
+  pwWire($("#macPw"));
+  $("#macPw").onsubmit = async e => {
+    e.preventDefault(); const note = $("#macPwNote"), btn = e.target.querySelector("button"); btn.disabled = true; note.textContent = "Checking…";
+    try { handBack(await passwordSignIn(e.target, appLogin.cc)); note.textContent = "Signed in. Going back to the Mac app…" } catch (err) { note.textContent = passkeyMessage(err); btn.disabled = false }
+  };
   $("#macIn").onclick = async () => {
     const note = $("#macNote"); note.textContent = "Waiting for your passkey…";
     try { handBack(await passkeySignIn(appLogin.cc)); note.textContent = "Signed in. Going back to the Mac app…" } catch (err) { note.textContent = passkeyMessage(err) }
@@ -2551,7 +2611,8 @@ async function loadMe() {
   if (!S.session) return;
   try {
     const m = await passkeyFn("me", {}, await freshToken());
-    S.me = { name: String(m.name || "").slice(0, 30), owner: m.isOwner === true, searches: Number.isInteger(m.personSearches) ? m.personSearches : null };
+    S.me = { name: String(m.name || "").slice(0, 30), owner: m.isOwner === true, searches: Number.isInteger(m.personSearches) ? m.personSearches : null,
+      passwordLogin: typeof m.passwordLogin === "string" ? m.passwordLogin.slice(0, 30) : null, passwordsOn: m.passwordsOn === true };
     persist(); renderChip();
   } catch (err) {
     if (err.status === 403) { await signOut(); toast(err.message, 7000) }
@@ -2577,7 +2638,7 @@ function macSheet() {
     <ol class="small muted" style="margin:0;padding-left:18px"><li>Open the downloaded zip and drag Garagebook to Applications.</li>
     <li>Open Garagebook. macOS says it can't check it: click <b>Done</b>.</li>
     <li>Open System Settings › Privacy &amp; Security, scroll down and click <b>Open Anyway</b> next to Garagebook.</li></ol>
-    <p class="small muted" style="margin:0">Then sign in with your passkey in the app.</p></div>`);
+    <p class="small muted" style="margin:0">Then sign in in the app, with your passkey or password.</p></div>`);
 }
 const offerMac = () => { let seen = true; try { seen = !!localStorage.getItem(MAC_OFFER) } catch {} if (!seen && isMacBrowser()) macSheet() };
 function nameSheet() {
@@ -2618,12 +2679,32 @@ async function passkeyFromLink(name) {
 function linkScreen() {
   document.querySelector(".top").hidden = true; $("#tabs").hidden = true;
   const j = linkInvite.join;
-  $("#view").innerHTML = `<section style="margin-top:10vh"><form class="card form" id="lk"><h2>${j ? "You're invited to Garagebook" : "Make a new passkey"}</h2>
-    <p class="muted" style="margin:0">${j ? "Garagebook keeps your motorcycle's service, fuel and papers. You sign in with a passkey: no password." : "This gives your Garagebook account a new passkey. Your garage stays as it is."}</p>
+  $("#view").innerHTML = `<section style="margin-top:10vh"><form class="card form" id="lk"><h2>${j ? "You're invited to Garagebook" : "Sign in again"}</h2>
+    <p class="muted" style="margin:0">${j ? "Garagebook keeps your motorcycle's service, fuel and papers. You sign in with a passkey, or with a password if your phone can't make one." : "Make a new passkey or password for your Garagebook account. Your garage stays as it is."}</p>
     ${j ? '<label class="f">Your name<input id="lkName" maxlength="30" required autocomplete="nickname"></label>' : ""}
     <p class="small muted" style="margin:0">${esc(deviceHint())}</p>
-    <p class="small muted" style="margin:0">${j ? "Your name is shown to the owner. " : ""}By making a passkey you accept the <a href="terms.html" target="_blank" rel="noopener">terms of use</a>. Read what is stored in the <a href="privacy.html" target="_blank" rel="noopener">privacy policy</a>.</p>
-    <button class="btn" type="submit">Make my passkey</button><p class="small muted" id="lkNote" style="margin:0" role="status"></p></form></section>`;
+    <p class="small muted" style="margin:0">${j ? "Your name is shown to the owner. " : ""}By joining you accept the <a href="terms.html" target="_blank" rel="noopener">terms of use</a>. Read what is stored in the <a href="privacy.html" target="_blank" rel="noopener">privacy policy</a>.</p>
+    <button class="btn" type="submit">Make my passkey</button><p class="small muted" id="lkNote" style="margin:0" role="status"></p></form>
+    <details class="card" id="lkPwBox"${/Android/.test(navigator.userAgent) ? " open" : ""}><summary><b>Can't make a passkey? Use a password instead</b></summary>
+    <form class="form" id="lkPw" method="post" autocomplete="on" style="margin-top:10px">
+    <p class="small muted" style="margin:0">${j ? "Choose a sign-in name and a password. Your phone's password manager can save them." : "Choose a new password. Leave the sign-in name empty to keep the one you have. Every other device is signed out."}</p>
+    ${pwFields(true, "", !j)}<button class="btn ghost" type="submit">${j ? "Join with a password" : "Save new password"}</button><p class="small muted" id="lkPwNote" style="margin:0" role="status"></p></form></details></section>`;
+  pwWire($("#lkPw"));
+  $("#lkPw").onsubmit = async e => {
+    e.preventDefault(); const f = e.target, note = $("#lkPwNote"), btn = f.querySelector("button");
+    const name = j ? $("#lkName").value.trim() : undefined;
+    if (j && !name) { note.textContent = "Type your name at the top first."; $("#lkName").focus(); return }
+    btn.disabled = true; note.textContent = "Saving…";
+    try {
+      const made = await passkeyFn(j ? "password-join" : "password-reset", { invite: linkInvite.token, ...(j ? { name } : {}), ...pwValues(f) });
+      pwClear(f);
+      if (S.session && S.session.id !== made?.user?.id) { const old = S.session.access; api("auth/v1/logout?scope=local", { method: "POST", token: old }).catch(() => {}) }
+      keepSession(made);
+      history.replaceState(null, "", location.pathname);
+      document.querySelector(".top").hidden = false; $("#tabs").hidden = false;
+      await firstSync(); await loadMe(); render(); toast(j ? "Welcome to Garagebook" : "Password saved"); offerMac();
+    } catch (err) { pwClear(f); note.textContent = passkeyMessage(err); btn.disabled = false }
+  };
   $("#lk").onsubmit = async e => {
     e.preventDefault();
     const note = $("#lkNote"), btn = $("#lk button"); btn.disabled = true; note.textContent = "Making your passkey…";
@@ -2850,6 +2931,8 @@ document.addEventListener("click", e => {
   const wm = e.target.closest("[data-wmove]"); if (wm) return moveWidget(b, wm.dataset.wid, wm.dataset.wmove);
   if (a === "addPhoto") return addPhoto(b);
   if (a === "addPasskey") return addPasskey();
+  if (a === "password") return passwordSheet();
+  if (a === "passwordRemove") return passwordSheet(true);
   if (a === "admin") return adminSheet();
   if (a === "myName") return nameSheet();
   if (a === "macApp") return macSheet();
